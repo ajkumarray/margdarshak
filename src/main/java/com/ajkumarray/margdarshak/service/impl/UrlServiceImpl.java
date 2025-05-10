@@ -22,10 +22,12 @@ import com.ajkumarray.margdarshak.util.UrlGenerator;
 @Service
 public class UrlServiceImpl implements UrlService {
     private final UrlRepository urlRepository;
+    private final UrlGenerator urlGenerator;
 
     @Autowired
-    public UrlServiceImpl(UrlRepository urlRepository) {
+    public UrlServiceImpl(UrlRepository urlRepository, UrlGenerator urlGenerator) {
         this.urlRepository = urlRepository;
+        this.urlGenerator = urlGenerator;
     }
 
     /**
@@ -45,7 +47,7 @@ public class UrlServiceImpl implements UrlService {
         LocalDateTime now = LocalDateTime.now();
 
         Url url = Url.builder()
-            .originalUrl(originalUrl)
+            .url(originalUrl)
             .shortUrl(shortUrl)
             .createdAt(now)
             .expiresAt(now.plusDays(expirationDays))
@@ -75,7 +77,7 @@ public class UrlServiceImpl implements UrlService {
                     url.setClickCount(url.getClickCount() + 1);
                     url.setLastAccessedAt(LocalDateTime.now());
                     urlRepository.save(url);
-                    return url.getOriginalUrl();
+                    return url.getUrl();
                 });
     }
 
@@ -157,7 +159,7 @@ public class UrlServiceImpl implements UrlService {
      * @throws RuntimeException if unable to generate a unique URL after maximum retries
      */
     private String generateUniqueShortUrl() {
-        String shortUrl;
+        String shortCode;
         int retries = 0;
         
         do {
@@ -165,11 +167,11 @@ public class UrlServiceImpl implements UrlService {
                 throw new RuntimeException("Failed to generate unique short URL after " + 
                     UrlConstants.MAX_SHORT_URL_GENERATION_RETRIES + " attempts");
             }
-            shortUrl = UrlGenerator.generateShortUrl();
+            shortCode = UrlGenerator.generateShortCode();
             retries++;
-        } while (urlRepository.existsByShortUrl(shortUrl));
+        } while (urlRepository.existsByShortUrl(shortCode));
 
-        return shortUrl;
+        return shortCode;
     }
 
     /**
@@ -188,5 +190,14 @@ public class UrlServiceImpl implements UrlService {
                 UrlConstants.MIN_EXPIRATION_DAYS + " and " + 
                 UrlConstants.MAX_EXPIRATION_DAYS);
         }
+    }
+
+    @Override
+    public Optional<Url> updateUrlStatus(String shortUrl, String action) {
+        if (!action.equalsIgnoreCase("enable") && !action.equalsIgnoreCase("disable")) {
+            throw new InvalidUrlException("Invalid action. Must be either 'enable' or 'disable'");
+        }
+        boolean enable = action.equalsIgnoreCase("enable");
+        return enable ? enableUrl(shortUrl) : disableUrl(shortUrl);
     }
 } 

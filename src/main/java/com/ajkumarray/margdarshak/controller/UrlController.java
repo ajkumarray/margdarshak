@@ -2,6 +2,7 @@ package com.ajkumarray.margdarshak.controller;
 
 import java.util.Map;
 import java.util.Optional;
+import java.net.URI;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -23,6 +24,7 @@ import com.ajkumarray.margdarshak.entity.Url;
 import com.ajkumarray.margdarshak.exception.InvalidUrlException;
 import com.ajkumarray.margdarshak.service.UrlService;
 import com.ajkumarray.margdarshak.validator.UrlValidator;
+import com.ajkumarray.margdarshak.util.UrlGenerator;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -34,6 +36,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
+import org.springframework.beans.factory.annotation.Value;
 
 /**
  * REST Controller for URL shortening operations. Provides endpoints for
@@ -52,20 +55,21 @@ public class UrlController {
     @Autowired
     private UrlValidator urlValidator;
 
+    @Value("${url.shortener.base-url:http://localhost:8080/api/v1/urls/}")
+    private String baseUrl;
+
     /**
-     * Creates a short URL for the given original URL.
+     * Creates a short URL for the given URL.
      *
-     * @param request The URL creation request containing the original URL and
-     *                expiration days
+     * @param request The URL creation request containing the URL and expiration days
      * @return ResponseEntity with the created short URL and expiration date
-     * @throws InvalidUrlException if the URL is invalid or expiration days are
-     *                             invalid
+     * @throws InvalidUrlException if the URL is invalid or expiration days are invalid
      */
-    @Operation(summary = "Create a short URL", description = "Creates a new short URL for the given original URL with specified expiration days.", requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = UrlCreateRequest.class), examples = {
+    @Operation(summary = "Create a short URL", description = "Creates a new short URL for the given URL with specified expiration days.", requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = UrlCreateRequest.class), examples = {
             @ExampleObject(name = "Valid Request", value = "{\"url\": \"https://example.com\", \"expirationDays\": 30}") })))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "URL shortened successfully", content = @Content(schema = @Schema(implementation = UrlShortenResponse.class), examples = {
-                    @ExampleObject(name = "Success Response", value = "{\"shortUrl\": \"abc123\", \"expiresAt\": \"2024-05-10T12:00:00\"}") })),
+                    @ExampleObject(name = "Success Response", value = "{\"code\": \"abc123\", \"shortUrl\": \"http://localhost:8080/api/v1/urls/abc123\", \"url\": \"https://example.com\", \"createdAt\": \"2024-05-10T12:00:00\", \"expiresAt\": \"2024-06-10T12:00:00\", \"clickCount\": 0}") })),
             @ApiResponse(responseCode = "400", description = "Invalid URL or expiration days", content = @Content(schema = @Schema(implementation = UrlShortenResponse.class), examples = {
                     @ExampleObject(name = "Error Response", value = "{\"errorMessage\": \"Invalid URL format\"}") })),
             @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content(schema = @Schema(implementation = UrlShortenResponse.class), examples = {
@@ -73,15 +77,24 @@ public class UrlController {
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<UrlShortenResponse> createShortUrl(@Valid @RequestBody UrlCreateRequest request) {
         try {
-            urlValidator.validateUrl(request.getUrl(), request.getExpirationDays());
+            UrlGenerator.validateUrl(request.getUrl());
+            UrlGenerator.validateExpirationDays(request.getExpirationDays());
             Url url = urlService.createShortUrl(request.getUrl(), request.getExpirationDays());
-            return ResponseEntity.ok(new UrlShortenResponse(url.getShortUrl(), url.getExpiresAt()));
+            UrlShortenResponse response = new UrlShortenResponse(
+                url.getShortUrl(),
+                baseUrl + url.getShortUrl(),
+                url.getUrl(),
+                url.getCreatedAt(),
+                url.getExpiresAt(),
+                url.getClickCount()
+            );
+            return ResponseEntity.ok(response);
         } catch (InvalidUrlException e) {
-            return ResponseEntity.badRequest().body(new UrlShortenResponse(null, null, e.getMessage()));
+            return ResponseEntity.badRequest().body(new UrlShortenResponse(e.getMessage()));
         } catch (RuntimeException e) {
             String errorMessage = "Failed to generate unique short URL. Please try again.";
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new UrlShortenResponse(null, null, errorMessage));
+                    .body(new UrlShortenResponse(errorMessage));
         }
     }
 
@@ -99,9 +112,12 @@ public class UrlController {
             @ApiResponse(responseCode = "404", description = "URL not found, expired, or disabled", content = @Content(schema = @Schema(type = "string"), examples = {
                     @ExampleObject(name = "Error Response", value = "URL not found") })) })
     @GetMapping("/{shortUrl}")
-    public ResponseEntity<String> redirectToOriginalUrl(
+    public ResponseEntity<Void> redirectToOriginalUrl(
             @Parameter(description = "The short URL to redirect from", required = true) @PathVariable String shortUrl) {
-        return urlService.getOriginalUrl(shortUrl).map(url -> ResponseEntity.ok().body(url))
+        return urlService.getOriginalUrl(shortUrl)
+                .map(url -> ResponseEntity.status(HttpStatus.FOUND)
+                        .location(URI.create(url))
+                        .<Void>build())
                 .orElse(ResponseEntity.notFound().build());
     }
 
@@ -112,13 +128,18 @@ public class UrlController {
      * @return ResponseEntity with URL information if found and active
      */
     @Operation(summary = "Get URL information", description = "Retrieves basic information about a short URL")
-    @ApiResponses({ @ApiResponse(responseCode = "200", description = "URL information retrieved successfully"),
+    @ApiResponses({ 
+            @ApiResponse(responseCode = "200", description = "URL information retrieved successfully", content = @Content(schema = @Schema(type = "object"), examples = {
+                    @ExampleObject(name = "Success Response", value = "{\"url\": \"https://example.com\", \"shortUrl\": \"http://localhost:8080/api/v1/urls/abc123\"}") })),
             @ApiResponse(responseCode = "404", description = "URL not found, expired, or disabled") })
     @GetMapping("/{shortUrl}/info")
     public ResponseEntity<?> getUrlInfo(
             @Parameter(description = "The short URL to get information for", required = true) @PathVariable String shortUrl) {
         return urlService.getOriginalUrl(shortUrl)
-                .map(originalUrl -> ResponseEntity.ok().body(Map.of("originalUrl", originalUrl, "shortUrl", shortUrl)))
+                .map(originalUrl -> ResponseEntity.ok().body(Map.of(
+                    "url", originalUrl,
+                    "shortUrl", baseUrl + shortUrl
+                )))
                 .orElse(ResponseEntity.notFound().build());
     }
 
@@ -132,7 +153,7 @@ public class UrlController {
             @Parameter(name = "shortUrl", description = "The short URL to get statistics for", example = "abc123", required = true) })
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Statistics retrieved successfully", content = @Content(schema = @Schema(implementation = UrlStatsResponse.class), examples = {
-                    @ExampleObject(name = "Success Response", value = "{\"originalUrl\": \"https://example.com\", \"shortUrl\": \"abc123\", \"clickCount\": 10, \"createdAt\": \"2024-04-10T12:00:00\", \"expiresAt\": \"2024-05-10T12:00:00\"}") })),
+                    @ExampleObject(name = "Success Response", value = "{\"url\": \"https://example.com\", \"shortUrl\": \"http://localhost:8080/api/v1/urls/abc123\", \"clickCount\": 10, \"createdAt\": \"2024-04-10T12:00:00\", \"expiresAt\": \"2024-05-10T12:00:00\"}") })),
             @ApiResponse(responseCode = "404", description = "URL not found, expired, or disabled", content = @Content(schema = @Schema(type = "string"), examples = {
                     @ExampleObject(name = "Error Response", value = "URL not found") })) })
     @GetMapping("/{shortUrl}/stats")
@@ -141,8 +162,13 @@ public class UrlController {
         Optional<Url> urlOptional = urlService.getUrlStats(shortUrl);
         if (urlOptional.isPresent()) {
             Url url = urlOptional.get();
-            return ResponseEntity.ok(new UrlStatsResponse(url.getOriginalUrl(), url.getShortUrl(), url.getClickCount(),
-                    url.getCreatedAt(), url.getExpiresAt()));
+            return ResponseEntity.ok(new UrlStatsResponse(
+                url.getUrl(),
+                baseUrl + url.getShortUrl(),
+                url.getClickCount().longValue(),
+                url.getCreatedAt(),
+                url.getExpiresAt()
+            ));
         }
         return ResponseEntity.notFound().build();
     }
@@ -159,7 +185,7 @@ public class UrlController {
             @Parameter(name = "expirationDays", description = "New number of days until expiration", example = "14", required = true) })
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "URL updated successfully", content = @Content(schema = @Schema(implementation = UrlShortenResponse.class), examples = {
-                    @ExampleObject(name = "Success Response", value = "{\"shortUrl\": \"abc123\", \"expiresAt\": \"2024-05-24T12:00:00\"}") })),
+                    @ExampleObject(name = "Success Response", value = "{\"code\": \"abc123\", \"shortUrl\": \"http://localhost:8080/api/v1/urls/abc123\", \"url\": \"https://example.com\", \"createdAt\": \"2024-05-10T12:00:00\", \"expiresAt\": \"2024-05-24T12:00:00\", \"clickCount\": 5}") })),
             @ApiResponse(responseCode = "404", description = "URL not found, expired, or disabled", content = @Content(schema = @Schema(type = "string"), examples = {
                     @ExampleObject(name = "Error Response", value = "URL not found") })),
             @ApiResponse(responseCode = "400", description = "Invalid expiration days", content = @Content(schema = @Schema(type = "string"), examples = {
@@ -168,9 +194,22 @@ public class UrlController {
     public ResponseEntity<UrlShortenResponse> updateUrlExpiration(
             @Parameter(description = "The short URL to update", required = true) @PathVariable String shortUrl,
             @Parameter(description = "New number of days until expiration", required = true) @RequestParam @Min(1) Integer expirationDays) {
-        return urlService.updateUrl(shortUrl, expirationDays)
-                .map(url -> ResponseEntity.ok(new UrlShortenResponse(url.getShortUrl(), url.getExpiresAt())))
+        try {
+            UrlGenerator.validateExpirationDays(expirationDays);
+            return urlService.updateUrl(shortUrl, expirationDays)
+                .map(url -> new UrlShortenResponse(
+                    url.getShortUrl(),
+                    baseUrl + url.getShortUrl(),
+                    url.getUrl(),
+                    url.getCreatedAt(),
+                    url.getExpiresAt(),
+                    url.getClickCount()
+                ))
+                .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
+        } catch (InvalidUrlException e) {
+            return ResponseEntity.badRequest().body(new UrlShortenResponse(e.getMessage()));
+        }
     }
 
     /**
@@ -178,15 +217,14 @@ public class UrlController {
      *
      * @param shortUrl The short URL to update
      * @param action   The action to perform (enable/disable)
-     * @return UrlShortenResponse containing the updated short URL and expiration
-     *         date
+     * @return UrlShortenResponse containing the updated short URL and expiration date
      */
     @Operation(summary = "Update URL Status", description = "Updates the status (enable/disable) of a URL", parameters = {
             @Parameter(name = "shortUrl", description = "The short URL to update", example = "abc123", required = true),
             @Parameter(name = "action", description = "The action to perform (enable/disable)", example = "enable", required = true) })
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "URL status updated successfully", content = @Content(schema = @Schema(implementation = UrlShortenResponse.class), examples = {
-                    @ExampleObject(name = "Success Response", value = "{\"shortUrl\": \"abc123\", \"expiresAt\": \"2024-05-10T12:00:00\"}") })),
+                    @ExampleObject(name = "Success Response", value = "{\"code\": \"abc123\", \"shortUrl\": \"http://localhost:8080/api/v1/urls/abc123\", \"url\": \"https://example.com\", \"createdAt\": \"2024-05-10T12:00:00\", \"expiresAt\": \"2024-05-10T12:00:00\", \"clickCount\": 5}") })),
             @ApiResponse(responseCode = "400", description = "Invalid action provided", content = @Content(schema = @Schema(type = "string"), examples = {
                     @ExampleObject(name = "Error Response", value = "Invalid action. Must be either 'enable' or 'disable'") })),
             @ApiResponse(responseCode = "404", description = "URL not found", content = @Content(schema = @Schema(type = "string"), examples = {
@@ -194,14 +232,20 @@ public class UrlController {
     @PostMapping("/{shortUrl}/{action}")
     public ResponseEntity<UrlShortenResponse> updateUrlStatus(@PathVariable String shortUrl,
             @PathVariable String action) {
-        if (!action.equalsIgnoreCase("enable") && !action.equalsIgnoreCase("disable")) {
-            throw new IllegalArgumentException("Invalid action. Must be either 'enable' or 'disable'");
-        }
-
-        boolean enable = action.equalsIgnoreCase("enable");
-        Optional<Url> urlOptional = enable ? urlService.enableUrl(shortUrl) : urlService.disableUrl(shortUrl);
-
-        return urlOptional.map(url -> ResponseEntity.ok(new UrlShortenResponse(url.getShortUrl(), url.getExpiresAt())))
+        try {
+            return urlService.updateUrlStatus(shortUrl, action)
+                .map(url -> new UrlShortenResponse(
+                    url.getShortUrl(),
+                    baseUrl + url.getShortUrl(),
+                    url.getUrl(),
+                    url.getCreatedAt(),
+                    url.getExpiresAt(),
+                    url.getClickCount()
+                ))
+                .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
+        } catch (InvalidUrlException e) {
+            return ResponseEntity.badRequest().body(new UrlShortenResponse(e.getMessage()));
+        }
     }
 }

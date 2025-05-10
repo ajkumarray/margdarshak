@@ -61,4 +61,14 @@ public interface UrlService {
      * @return Optional containing the enabled URL entity if found
      */
     Optional<Url> enableUrl(String shortUrl);
+
+    /**
+     * Updates the status of a short URL (enable/disable).
+     *
+     * @param shortUrl The short URL to update
+     * @param action The action to perform (enable/disable)
+     * @return Optional containing the updated URL entity if found
+     * @throws InvalidUrlException if the action is invalid
+     */
+    Optional<Url> updateUrlStatus(String shortUrl, String action);
 } 
