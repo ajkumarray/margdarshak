@@ -9,9 +9,9 @@ url.shortener.protocol=http
 url.shortener.context-path=/api/v1/urls
 
 # Database Configuration
-spring.datasource.url=jdbc:postgresql://localhost:5432/margdarshak
-spring.datasource.username=postgres
-spring.datasource.password=postgres
+spring.datasource.url={{ secret.DATABASE_URL }}
+spring.datasource.username={{ secret.DATABASE_USER }}
+spring.datasource.password={{ secret.DATABASE_PASSWORD }}
 spring.datasource.driver-class-name=org.postgresql.Driver
 
 # JPA/Hibernate Configuration
