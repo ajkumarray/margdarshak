@@ -72,4 +72,11 @@ public class UrlEntity {
 
     @Column(name = "created_by", nullable = false)
     private String createdBy;
+
+    @Column(name = "deleted", nullable = false)
+    @Builder.Default
+    private Boolean deleted = false;
+
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
 } 
