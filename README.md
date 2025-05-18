@@ -106,13 +106,15 @@ The application includes Actuator endpoints for monitoring:
 - `com.ajkumarray.margdarshak.controller`: REST API endpoints
 - `com.ajkumarray.margdarshak.service`: Business logic
 - `com.ajkumarray.margdarshak.repository`: Data access layer
-- `com.ajkumarray.margdarshak.entity`: Database entities
-- `com.ajkumarray.margdarshak.dto`: Data transfer objects
+- `com.ajkumarray.margdarshak.entity`: Database entities (e.g., UrlEntity)
+- `com.ajkumarray.margdarshak.models.request`: Request DTOs
+- `com.ajkumarray.margdarshak.models.response`: Response DTOs
 - `com.ajkumarray.margdarshak.exception`: Custom exceptions
 - `com.ajkumarray.margdarshak.validator`: Input validation
 - `com.ajkumarray.margdarshak.config`: Configuration classes
 - `com.ajkumarray.margdarshak.constants`: Application constants
 - `com.ajkumarray.margdarshak.util`: Utility classes
+- `com.ajkumarray.margdarshak.enums`: Enumeration classes
 
 ### Testing
 
