@@ -17,10 +17,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.ajkumarray.margdarshak.dto.UrlCreateRequest;
-import com.ajkumarray.margdarshak.dto.UrlShortenResponse;
-import com.ajkumarray.margdarshak.dto.UrlStatsResponse;
-import com.ajkumarray.margdarshak.entity.Url;
+import com.ajkumarray.margdarshak.models.request.UrlCreateRequest;
+import com.ajkumarray.margdarshak.models.response.UrlShortenResponse;
+import com.ajkumarray.margdarshak.models.response.UrlStatsResponse;
+import com.ajkumarray.margdarshak.entity.UrlEntity;
 import com.ajkumarray.margdarshak.exception.InvalidUrlException;
 import com.ajkumarray.margdarshak.service.UrlService;
 import com.ajkumarray.margdarshak.validator.UrlValidator;
@@ -62,7 +62,7 @@ public class UrlController {
      * Creates a short URL for the given URL.
      *
      * @param request The URL creation request containing the URL and expiration days
-     * @return ResponseEntity with the created short URL and expiration date
+     * @return ResponseEntity with the created short URL and expiration date (clickCount is a Long)
      * @throws InvalidUrlException if the URL is invalid or expiration days are invalid
      */
     @Operation(summary = "Create a short URL", description = "Creates a new short URL for the given URL with specified expiration days.", requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = UrlCreateRequest.class), examples = {
@@ -79,16 +79,15 @@ public class UrlController {
         try {
             UrlGenerator.validateUrl(request.getUrl());
             UrlGenerator.validateExpirationDays(request.getExpirationDays());
-            Url url = urlService.createShortUrl(request.getUrl(), request.getExpirationDays());
-            UrlShortenResponse response = new UrlShortenResponse(
-                url.getShortUrl(),
-                baseUrl + url.getShortUrl(),
-                url.getUrl(),
-                url.getCreatedAt(),
-                url.getExpiresAt(),
-                url.getClickCount()
-            );
-            return ResponseEntity.ok(response);
+            UrlEntity url = urlService.createShortUrl(request.getUrl(), request.getExpirationDays());
+            return ResponseEntity.ok(UrlShortenResponse.builder()
+                    .shortUrl(url.getShortUrl())
+                    .originalUrl(url.getUrl())
+                    .expiresAt(url.getExpiresAt())
+                    .createdAt(url.getCreatedAt())
+                    .clickCount(url.getClickCount())
+                    .status(url.getStatus())
+                    .build());
         } catch (InvalidUrlException e) {
             return ResponseEntity.badRequest().body(new UrlShortenResponse(e.getMessage()));
         } catch (RuntimeException e) {
@@ -147,9 +146,9 @@ public class UrlController {
      * Gets statistics for a short URL.
      *
      * @param shortUrl The short URL to get statistics for
-     * @return ResponseEntity with URL statistics if found and active
+     * @return ResponseEntity with URL statistics if found and active (clickCount is a Long)
      */
-    @Operation(summary = "Get URL statistics", description = "Retrieves detailed statistics for a short URL including click count and timestamps", parameters = {
+    @Operation(summary = "Get URL statistics", description = "Retrieves detailed statistics for a short URL including click count (Long) and timestamps", parameters = {
             @Parameter(name = "shortUrl", description = "The short URL to get statistics for", example = "abc123", required = true) })
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Statistics retrieved successfully", content = @Content(schema = @Schema(implementation = UrlStatsResponse.class), examples = {
@@ -159,13 +158,13 @@ public class UrlController {
     @GetMapping("/{shortUrl}/stats")
     public ResponseEntity<UrlStatsResponse> getUrlStats(
             @Parameter(description = "The short URL to get statistics for", required = true) @PathVariable String shortUrl) {
-        Optional<Url> urlOptional = urlService.getUrlStats(shortUrl);
+        Optional<UrlEntity> urlOptional = urlService.getUrlStats(shortUrl);
         if (urlOptional.isPresent()) {
-            Url url = urlOptional.get();
+            UrlEntity url = urlOptional.get();
             return ResponseEntity.ok(new UrlStatsResponse(
                 url.getUrl(),
                 baseUrl + url.getShortUrl(),
-                url.getClickCount().longValue(),
+                url.getClickCount(),
                 url.getCreatedAt(),
                 url.getExpiresAt()
             ));
@@ -178,7 +177,7 @@ public class UrlController {
      *
      * @param shortUrl       The short URL to update
      * @param expirationDays New number of days until expiration
-     * @return ResponseEntity with the updated URL information
+     * @return ResponseEntity with the updated URL information (clickCount is a Long)
      */
     @Operation(summary = "Update URL expiration", description = "Updates the expiration date of an existing shortened URL", parameters = {
             @Parameter(name = "shortUrl", description = "The short URL to update", example = "abc123", required = true),
@@ -197,14 +196,14 @@ public class UrlController {
         try {
             UrlGenerator.validateExpirationDays(expirationDays);
             return urlService.updateUrl(shortUrl, expirationDays)
-                .map(url -> new UrlShortenResponse(
-                    url.getShortUrl(),
-                    baseUrl + url.getShortUrl(),
-                    url.getUrl(),
-                    url.getCreatedAt(),
-                    url.getExpiresAt(),
-                    url.getClickCount()
-                ))
+                .map(url -> UrlShortenResponse.builder()
+                    .shortUrl(url.getShortUrl())
+                    .originalUrl(url.getUrl())
+                    .createdAt(url.getCreatedAt())
+                    .expiresAt(url.getExpiresAt())
+                    .clickCount(url.getClickCount())
+                    .status(url.getStatus())
+                    .build())
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
         } catch (InvalidUrlException e) {
@@ -217,7 +216,7 @@ public class UrlController {
      *
      * @param shortUrl The short URL to update
      * @param action   The action to perform (enable/disable)
-     * @return UrlShortenResponse containing the updated short URL and expiration date
+     * @return UrlShortenResponse containing the updated short URL and expiration date (clickCount is a Long)
      */
     @Operation(summary = "Update URL Status", description = "Updates the status (enable/disable) of a URL", parameters = {
             @Parameter(name = "shortUrl", description = "The short URL to update", example = "abc123", required = true),
@@ -234,14 +233,14 @@ public class UrlController {
             @PathVariable String action) {
         try {
             return urlService.updateUrlStatus(shortUrl, action)
-                .map(url -> new UrlShortenResponse(
-                    url.getShortUrl(),
-                    baseUrl + url.getShortUrl(),
-                    url.getUrl(),
-                    url.getCreatedAt(),
-                    url.getExpiresAt(),
-                    url.getClickCount()
-                ))
+                .map(url -> UrlShortenResponse.builder()
+                    .shortUrl(url.getShortUrl())
+                    .originalUrl(url.getUrl())
+                    .createdAt(url.getCreatedAt())
+                    .expiresAt(url.getExpiresAt())
+                    .clickCount(url.getClickCount())
+                    .status(url.getStatus())
+                    .build())
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
         } catch (InvalidUrlException e) {

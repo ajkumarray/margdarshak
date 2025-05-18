@@ -1,4 +1,4 @@
-package com.ajkumarray.margdarshak.dto;
+package com.ajkumarray.margdarshak.models.request;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;

@@ -2,12 +2,15 @@ package com.ajkumarray.margdarshak.service;
 
 import java.util.Optional;
 
-import com.ajkumarray.margdarshak.entity.Url;
+import org.springframework.stereotype.Service;
+
+import com.ajkumarray.margdarshak.entity.UrlEntity;
 
 /**
  * Service interface for URL shortening operations.
  * Provides methods for creating, retrieving, and managing shortened URLs.
  */
+@Service
 public interface UrlService {
     /**
      * Creates a short URL for the given original URL.
@@ -17,7 +20,7 @@ public interface UrlService {
      * @return The created URL entity
      * @throws InvalidUrlException if the URL is invalid or expiration days are invalid
      */
-    Url createShortUrl(String originalUrl, Integer expirationDays);
+    UrlEntity createShortUrl(String originalUrl, Integer expirationDays);
 
     /**
      * Gets the original URL for a given short URL.
@@ -32,9 +35,9 @@ public interface UrlService {
      * Gets statistics for a given short URL.
      *
      * @param shortUrl The short URL to get statistics for
-     * @return Optional containing the URL entity if found, active, and not expired
+     * @return Optional containing the URL entity (UrlEntity) if found, active, and not expired. The clickCount is a Long.
      */
-    Optional<Url> getUrlStats(String shortUrl);
+    Optional<UrlEntity> getUrlStats(String shortUrl);
 
     /**
      * Updates the expiration date of a short URL.
@@ -44,7 +47,7 @@ public interface UrlService {
      * @return Optional containing the updated URL entity if found, active, and not expired
      * @throws InvalidUrlException if expiration days are invalid
      */
-    Optional<Url> updateUrl(String shortUrl, Integer expirationDays);
+    Optional<UrlEntity> updateUrl(String shortUrl, Integer expirationDays);
 
     /**
      * Disables a short URL, preventing further access.
@@ -52,7 +55,7 @@ public interface UrlService {
      * @param shortUrl The short URL to disable
      * @return Optional containing the disabled URL entity if found
      */
-    Optional<Url> disableUrl(String shortUrl);
+    Optional<UrlEntity> disableUrl(String shortUrl);
 
     /**
      * Enables a previously disabled short URL.
@@ -60,7 +63,7 @@ public interface UrlService {
      * @param shortUrl The short URL to enable
      * @return Optional containing the enabled URL entity if found
      */
-    Optional<Url> enableUrl(String shortUrl);
+    Optional<UrlEntity> enableUrl(String shortUrl);
 
     /**
      * Updates the status of a short URL (enable/disable).
@@ -70,5 +73,5 @@ public interface UrlService {
      * @return Optional containing the updated URL entity if found
      * @throws InvalidUrlException if the action is invalid
      */
-    Optional<Url> updateUrlStatus(String shortUrl, String action);
+    Optional<UrlEntity> updateUrlStatus(String shortUrl, String action);
 } 

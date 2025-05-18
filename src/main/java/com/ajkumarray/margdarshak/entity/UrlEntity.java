@@ -16,18 +16,22 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
+import com.ajkumarray.margdarshak.enums.UrlStatusEnums;
+
+/**
+ * Entity class representing a URL in the system.
+ * Contains information about both the original and shortened URLs.
+ */
 @Entity
 @Table(name = "urls")
-@Getter
-@Setter
+@Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Url {
+public class UrlEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -38,30 +42,34 @@ public class Url {
             message = "Invalid URL format")
     private String url;
 
-    @Column(nullable = false, unique = true)
+    @Column(name = "short_url", nullable = false, unique = true)
     @NotBlank(message = "Short URL cannot be empty")
     private String shortUrl;
 
-    @Column(nullable = false)
+    @Column(name = "created_at", nullable = false)
     @NotNull(message = "Created at timestamp cannot be null")
     private LocalDateTime createdAt;
 
-    @Column(nullable = false)
+    @Column(name = "expires_at", nullable = false)
     @NotNull(message = "Expires at timestamp cannot be null")
     private LocalDateTime expiresAt;
 
-    @Column(nullable = false)
+    /**
+     * The number of times this short URL has been accessed.
+     * This is a Long value and is incremented on each redirect.
+     */
+    @Column(name = "click_count", nullable = false)
     @Min(value = 0, message = "Click count cannot be negative")
-    private Integer clickCount;
+    private Long clickCount;
 
-    @Column(nullable = false)
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     @NotNull(message = "Status cannot be null")
-    private UrlStatus status;
+    private UrlStatusEnums status;
 
-    @Column
+    @Column(name = "last_accessed_at")
     private LocalDateTime lastAccessedAt;
 
-    @Column
+    @Column(name = "created_by", nullable = false)
     private String createdBy;
 } 
