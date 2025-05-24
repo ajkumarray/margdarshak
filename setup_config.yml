@@ -1,9 +1,0 @@
-hosts: localhost
-connection: local
-tasks:
-  - name: Get Secrets
-    set_fact: secret={{ lookup('aws_secret', 'margdarshak', region='ap-south-1', profile='default')}}
-    when: env_type == "dev"
-
-    - name: generate application.properties
-    template: src=src/main/resources/application.properties.j2 dest=src/main/resources/application.properties
