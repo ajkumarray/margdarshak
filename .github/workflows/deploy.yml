@@ -41,26 +41,26 @@ jobs:
             --output text > /tmp/secrets/env.json
 
       - name: Render .j2 templates
-      run: |
-        python3 - <<EOF
-        import json
-        import os
-        from jinja2 import Template
+        run: |
+          python3 - <<EOF
+          import json
+          import os
+          from jinja2 import Template
 
-        with open('/tmp/secrets/env.json') as f:
-            data = json.load(f)
+          with open('/tmp/secrets/env.json') as f:
+              data = json.load(f)
 
-        for root, _, files in os.walk('src/main/resources'):
-            for file in files:
-                if file.endswith('.j2'):
-                  j2_path = os.path.join(root, file)
-                  out_path = j2_path[:-3]  # Remove .j2
-                  with open(j2_path) as template_file:
-                      template = Template(template_file.read())
-                      rendered = template.render(**data)
-                      with open(out_path, 'w') as out_file:
-                          out_file.write(rendered)
-      EOF
+          for root, _, files in os.walk('src/main/resources'):
+              for file in files:
+                  if file.endswith('.j2'):
+                      j2_path = os.path.join(root, file)
+                      out_path = j2_path[:-3]  # Remove .j2
+                      with open(j2_path) as template_file:
+                          template = Template(template_file.read())
+                          rendered = template.render(**data)
+                          with open(out_path, 'w') as out_file:
+                              out_file.write(rendered)
+          EOF
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
