@@ -55,13 +55,13 @@ jobs:
             fi
 
             #Export AWS env credentials
-            echo AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
+            echo AWS_SECRET_KEY_ID=${{ secrets.AWS_SECRET_KEY_ID }}
             echo AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
             echo AWS_REGION=ap-south-1
 
             # Fetch secrets from AWS Secrets Manager
             mkdir -p /tmp/secrets
-            AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} \
+            AWS_SECRET_KEY_ID=${{ secrets.AWS_SECRET_KEY_ID }} \
             AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }} \
             AWS_REGION=ap-south-1 \
             aws secretsmanager get-secret-value --secret-id margdarshak/secrets --query SecretString --output text > /tmp/secrets/env.json
