@@ -16,6 +16,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::905418404019:instance-profile/MargdarshakEC2Role
+          aws-region: ap-south-1
+
       - name: Install dependencies for Jinja2 templates
         run: |
           sudo apt-get update && sudo apt-get install -y python3-pip jq unzip
