@@ -64,7 +64,7 @@ jobs:
             AWS_ACCESS_KEY_ID=${{ secrets.AWS_SECRET_KEY_ID }} \
             AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }} \
             AWS_REGION=ap-south-1 \
-            aws secretsmanager get-secret-value --secret-id margdarshak/secrets --query SecretString --output text > /tmp/secrets/env.json
+            aws secretsmanager get-secret-value --secret-id margdarshak-GPVtKu --query SecretString --output text > /tmp/secrets/env.json
 
             # Render all .j2 templates in config directory
             cd /home/ubuntu/margdarshak
