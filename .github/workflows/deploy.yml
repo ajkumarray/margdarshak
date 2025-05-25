@@ -30,7 +30,7 @@ jobs:
       - name: Install dependencies for Jinja2 templates
         run: |
           sudo apt-get update && sudo apt-get install -y python3-pip jq unzip
-          pip3 install j2cli[yaml] --break-system-packages
+          pip3 install jinja2 PyYAML
 
       - name: Fetch secrets from AWS Secrets Manager
         run: |
@@ -43,10 +43,7 @@ jobs:
 
       - name: Render .j2 templates
         run: |
-          find src/main/resources -name '*.j2' | while read -r template; do
-            out="${template%.j2}"
-            j2 "$template" /tmp/secrets/env.json > "$out"
-          done
+          python3 render_templates.py /tmp/secrets/env.json
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
