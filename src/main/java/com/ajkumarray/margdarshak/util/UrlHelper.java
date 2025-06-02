@@ -16,7 +16,6 @@ import com.ajkumarray.margdarshak.enums.UrlStatusEnums;
 import com.ajkumarray.margdarshak.exception.ApplicationException;
 import com.ajkumarray.margdarshak.models.request.UrlMasterRequest;
 import com.ajkumarray.margdarshak.models.response.UrlMasterResponse;
-import com.ajkumarray.margdarshak.util.CommonFunctionHelper;
 
 /**
  * Utility class for generating and validating short URLs.
@@ -41,7 +40,7 @@ public final class UrlHelper {
         urlEntity.setShortUrl(baseUrl + urlEntity.getCode());
         urlEntity.setExpiresAt(LocalDateTime.now().plusDays(request.getExpirationDays()));
         urlEntity.setClickCount(0L);
-        urlEntity.setStatus(UrlStatusEnums.ACTIVE);
+        urlEntity.setStatus(request.getStatus());
         urlEntity.setLastAccessedAt(null);
         urlEntity.setCreatedBy(userCode);
         urlEntity.setCreatedAt(LocalDateTime.now());
@@ -66,6 +65,26 @@ public final class UrlHelper {
         return urlResponse;
     }
 
+    public UrlMasterEntity prepareUrlUpdateEntity(UrlMasterEntity urlEntity, UrlMasterRequest request) {
+        urlEntity.setUrl(encodeUrl(request.getUrl()));
+        urlEntity.setExpiresAt(LocalDateTime.now().plusDays(request.getExpirationDays()));
+        urlEntity.setStatus(request.getStatus());
+        urlEntity.setUpdatedAt(LocalDateTime.now());
+        return urlEntity;
+    }
+
+    public UrlMasterEntity prepareUrlUpdateStatusEntity(UrlMasterEntity urlEntity, String status) {
+        urlEntity.setStatus(UrlStatusEnums.valueOf(status));
+        urlEntity.setUpdatedAt(LocalDateTime.now());
+        return urlEntity;
+    }
+
+    public UrlMasterEntity prepareUrlUpdateExpireEntity(UrlMasterEntity urlEntity, int days) {
+        urlEntity.setExpiresAt(LocalDateTime.now().plusDays(days));
+        urlEntity.setUpdatedAt(LocalDateTime.now());
+        return urlEntity;
+    }
+
     public String encodeUrl(String url) {
         try {
             return URLEncoder.encode(url, "UTF-8");
@@ -82,109 +101,4 @@ public final class UrlHelper {
         }
     }
 
-    /**
-     * Generates a random short code of specified length.
-     *
-     * @return A randomly generated short code string
-     */
-    public static String generateShortCode() {
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < UrlConstants.SHORT_URL_LENGTH; i++) {
-            sb.append(UrlConstants.SHORT_URL_CHARACTERS
-                    .charAt(RANDOM.nextInt(UrlConstants.SHORT_URL_CHARACTERS.length())));
-        }
-        return sb.toString();
-    }
-
-    /**
-     * Generates a complete short URL by combining base URL and short code.
-     *
-     * @return A complete short URL that can be used for redirection
-     */
-    public String generateShortUrl() {
-        String shortCode = generateShortCode();
-        return baseUrl + shortCode;
-    }
-
-    /**
-     * Checks if a URL is valid.
-     *
-     * @param url The URL to validate
-     * @return true if the URL is valid, false otherwise
-     */
-    public static boolean isValidUrl(String url) {
-        try {
-            validateUrl(url);
-            return true;
-        } catch (ApplicationException e) {
-            return false;
-        }
-    }
-
-    /**
-     * Checks if expiration days are valid.
-     *
-     * @param days The number of days to validate
-     * @return true if the days are valid, false otherwise
-     */
-    public static boolean isValidExpirationDays(Integer days) {
-        try {
-            validateExpirationDays(days);
-            return true;
-        } catch (ApplicationException e) {
-            return false;
-        }
-    }
-
-    /**
-     * Validates if a URL matches the required pattern and is properly formatted.
-     *
-     * @param url The URL to validate
-     * @throws ApplicationException if the URL is invalid
-     */
-    public static void validateUrl(String url) {
-        if (url == null || url.trim().isEmpty()) {
-            throw new ApplicationException("URL cannot be empty");
-        }
-
-        // Check URL format
-        if (!url.matches(UrlConstants.URL_PATTERN)) {
-            throw new ApplicationException("Invalid URL format");
-        }
-
-        try {
-            // Validate URL structure
-            new URL(url).toURI();
-        } catch (Exception e) {
-            throw new ApplicationException("Invalid URL structure: " + e.getMessage());
-        }
-
-        // Check for malicious patterns
-        if (url.toLowerCase().contains("javascript:") || url.toLowerCase().contains("data:")
-                || url.toLowerCase().contains("vbscript:")) {
-            throw new ApplicationException("Invalid URL scheme");
-        }
-
-        // Check URL length
-        if (url.length() > 2048) {
-            throw new ApplicationException("URL too long");
-        }
-    }
-
-    /**
-     * Validates if the expiration days are within acceptable range.
-     *
-     * @param days The number of days to validate
-     * @throws ApplicationException if the days are invalid
-     */
-    public static void validateExpirationDays(Integer days) {
-        if (days == null) {
-            throw new ApplicationException("Expiration days cannot be null");
-        }
-
-        if (days < UrlConstants.MIN_EXPIRATION_DAYS || days > UrlConstants.MAX_EXPIRATION_DAYS) {
-            throw new ApplicationException(String.format("Expiration days must be between %d and %d",
-                    UrlConstants.MIN_EXPIRATION_DAYS, UrlConstants.MAX_EXPIRATION_DAYS));
-        }
-    }
 }
