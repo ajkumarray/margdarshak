@@ -3,6 +3,7 @@ package com.ajkumarray.margdarshak.models.response;
 import java.time.LocalDateTime;
 
 import com.ajkumarray.margdarshak.enums.UrlStatusEnums;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -31,10 +32,12 @@ public class UrlMasterResponse {
 
     @JsonProperty("createdAt")
     @Schema(description = "createdAt: created at of the url")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createdAt;
 
     @JsonProperty("expiresAt")
     @Schema(description = "expiresAt: expires at of the url")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime expiresAt;
 
     @JsonProperty("clickCount")
@@ -47,6 +50,7 @@ public class UrlMasterResponse {
 
     @JsonProperty("lastAccessedAt")
     @Schema(description = "lastAccessedAt: last accessed at of the url")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime lastAccessedAt;
 
     @JsonProperty("createdBy")

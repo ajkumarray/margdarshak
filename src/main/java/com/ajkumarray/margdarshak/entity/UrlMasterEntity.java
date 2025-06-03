@@ -23,7 +23,7 @@ import com.ajkumarray.margdarshak.enums.UrlStatusEnums;
  * both the original and shortened URLs.
  */
 @Entity
-@Table(name = "urls")
+@Table(name = "url_master")
 @Getter
 @Setter
 @ToString

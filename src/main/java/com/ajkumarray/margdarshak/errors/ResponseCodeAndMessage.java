@@ -11,5 +11,7 @@ public class ResponseCodeAndMessage {
     public static final String SUCCESS_CODE = "101";
     public static final String FAILED_CODE = "102";
     public static final String INVALID_URL_CODE = "103";
-
+    public static final String USER_REGISTRATION_FAILED = "003";
+    public static final String USER_LOGIN_FAILED = "004";
+    public static final String USER_ALREADY_EXISTS = "005";
 }
