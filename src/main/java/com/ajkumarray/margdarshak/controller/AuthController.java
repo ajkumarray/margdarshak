@@ -28,18 +28,18 @@ public class AuthController {
     @PostMapping(value = "/register")
     public ResponseEntity<ObjectResponse> register(@RequestBody UserMasterRequest request) {
         ObjectResponse response = new ObjectResponse();
-        response.setMessageCode(ApplicationEnums.URL_FAILED_CODE.getCode());
-        response.setMessage(MessageTranslator.toLocale(ApplicationEnums.URL_FAILED_CODE.getCode()));
-        HttpStatus headerStatus = HttpStatus.BAD_REQUEST;
-        response.setList(null);
+        // response.setMessageCode(ApplicationEnums.URL_FAILED_CODE.getCode());
+        // response.setMessage(MessageTranslator.toLocale(ApplicationEnums.URL_FAILED_CODE.getCode()));
+        HttpStatus headerStatus = HttpStatus.OK;
+        // response.setList(null);
 
         Object result = userService.register(request);
-        if (result != null) {
+        // if (result != null) {
             response.setMessageCode(ApplicationEnums.URL_SUCCESS_CODE.getCode());
             response.setMessage(MessageTranslator.toLocale(ApplicationEnums.URL_SUCCESS_CODE.getCode()));
-            headerStatus = HttpStatus.OK;
+            // headerStatus = HttpStatus.OK;
             response.setList(result);
-        }
+        // }
 
         return new ResponseEntity<>(response, headerStatus);
     }

@@ -6,10 +6,15 @@ public enum ApplicationEnums {
 
     URL_CREATION_SUCCESS(ResponseCodeAndMessage.URL_CREATION_SUCCESS),
     URL_CREATION_FAILED(ResponseCodeAndMessage.URL_CREATION_FAILED),
-    URL_SUCCESS_CODE(ResponseCodeAndMessage.SUCCESS_CODE), URL_FAILED_CODE(ResponseCodeAndMessage.FAILED_CODE),
+    URL_SUCCESS_CODE(ResponseCodeAndMessage.SUCCESS_CODE), 
+    URL_FAILED_CODE(ResponseCodeAndMessage.FAILED_CODE),
     INVALID_URL_CODE(ResponseCodeAndMessage.INVALID_URL_CODE),
-    USER_REGISTRATION_FAILED(ResponseCodeAndMessage.USER_REGISTRATION_FAILED),
-    USER_LOGIN_FAILED(ResponseCodeAndMessage.USER_LOGIN_FAILED),
+
+    
+    SIGNUP_SUCCESS(ResponseCodeAndMessage.SIGNUP_SUCCESS),
+    SIGNUP_FAILED(ResponseCodeAndMessage.SIGNUP_FAILED),
+    LOGIN_SUCCESS(ResponseCodeAndMessage.LOGIN_SUCCESS),
+    LOGIN_FAILED(ResponseCodeAndMessage.LOGIN_FAILED),
     USER_ALREADY_EXISTS(ResponseCodeAndMessage.USER_ALREADY_EXISTS);
 
     private String message;

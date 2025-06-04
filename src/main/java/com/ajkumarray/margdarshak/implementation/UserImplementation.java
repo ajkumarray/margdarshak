@@ -45,12 +45,13 @@ public class UserImplementation implements UserService {
             userEntity = userRepository.save(userEntity);
             return userHelper.prepareAuthResponse(userEntity);
         } catch (ApplicationException e) {
+            commonFunctionHelper.commonLoggerHelper(e, "UserImplementation -> register failed");
             throw e;
         } catch (Exception e) {
             commonFunctionHelper.commonLoggerHelper(e, "UserImplementation -> register failed");
             throw new ApplicationException(
-                    MessageTranslator.toLocale(ApplicationEnums.USER_REGISTRATION_FAILED.getCode()),
-                    ApplicationEnums.USER_REGISTRATION_FAILED.getCode());
+                    MessageTranslator.toLocale(ApplicationEnums.SIGNUP_FAILED.getCode()),
+                    ApplicationEnums.SIGNUP_FAILED.getCode());
         }
     }
 
@@ -63,19 +64,19 @@ public class UserImplementation implements UserService {
                     return userHelper.prepareAuthResponse(userEntity.get());
                 } else {
                     throw new ApplicationException(
-                            MessageTranslator.toLocale(ApplicationEnums.USER_LOGIN_FAILED.getCode()),
-                            ApplicationEnums.USER_LOGIN_FAILED.getCode());
+                            MessageTranslator.toLocale(ApplicationEnums.LOGIN_FAILED.getCode()),
+                            ApplicationEnums.LOGIN_FAILED.getCode());
                 }
             } else {
-                throw new ApplicationException(MessageTranslator.toLocale(ApplicationEnums.USER_LOGIN_FAILED.getCode()),
-                        ApplicationEnums.USER_LOGIN_FAILED.getCode());
+                throw new ApplicationException(MessageTranslator.toLocale(ApplicationEnums.LOGIN_FAILED.getCode()),
+                        ApplicationEnums.LOGIN_FAILED.getCode());
             }
         } catch (ApplicationException e) {
             throw e;
         } catch (Exception e) {
             commonFunctionHelper.commonLoggerHelper(e, "UserImplementation -> login failed");
-            throw new ApplicationException(MessageTranslator.toLocale(ApplicationEnums.USER_LOGIN_FAILED.getCode()),
-                    ApplicationEnums.USER_LOGIN_FAILED.getCode());
+            throw new ApplicationException(MessageTranslator.toLocale(ApplicationEnums.LOGIN_FAILED.getCode()),
+                    ApplicationEnums.LOGIN_FAILED.getCode());
         }
     }
 
