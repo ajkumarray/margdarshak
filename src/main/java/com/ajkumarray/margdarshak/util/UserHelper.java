@@ -58,7 +58,8 @@ public class UserHelper {
 
     public AuthResponse prepareAuthResponse(UserMasterEntity userEntity) {
         AuthResponse authResponse = new AuthResponse();
-        authResponse.setToken(jwtTokenProvider.generateToken(userEntity.getUserCode()));
+        String token = jwtTokenProvider.generateToken(userEntity.getUserCode());
+        authResponse.setToken(token);
         return authResponse;
     }
 

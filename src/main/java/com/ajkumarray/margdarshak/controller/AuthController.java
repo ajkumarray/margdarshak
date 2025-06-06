@@ -16,30 +16,25 @@ import com.ajkumarray.margdarshak.util.MessageTranslator;
 import org.springframework.http.HttpStatus;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.AllArgsConstructor;
 
 @RestController
-@RequestMapping(value = "${spring.api}")
+@RequestMapping(value = "${spring.api}auth")
 @Tag(name = "User", description = "User API")
+@AllArgsConstructor
 public class AuthController {
 
-    @Autowired
-    private UserService userService;
+    private final UserService userService;
 
     @PostMapping(value = "/register")
     public ResponseEntity<ObjectResponse> register(@RequestBody UserMasterRequest request) {
         ObjectResponse response = new ObjectResponse();
-        // response.setMessageCode(ApplicationEnums.URL_FAILED_CODE.getCode());
-        // response.setMessage(MessageTranslator.toLocale(ApplicationEnums.URL_FAILED_CODE.getCode()));
         HttpStatus headerStatus = HttpStatus.OK;
-        // response.setList(null);
+        response.setMessageCode(ApplicationEnums.SIGNUP_SUCCESS.getCode());
+        response.setMessage(MessageTranslator.toLocale(ApplicationEnums.SIGNUP_SUCCESS.getCode()));
 
         Object result = userService.register(request);
-        // if (result != null) {
-            response.setMessageCode(ApplicationEnums.URL_SUCCESS_CODE.getCode());
-            response.setMessage(MessageTranslator.toLocale(ApplicationEnums.URL_SUCCESS_CODE.getCode()));
-            // headerStatus = HttpStatus.OK;
-            response.setList(result);
-        // }
+        response.setList(result);
 
         return new ResponseEntity<>(response, headerStatus);
     }
@@ -47,17 +42,12 @@ public class AuthController {
     @PostMapping(value = "/login")
     public ResponseEntity<ObjectResponse> login(@RequestBody UserLoginRequest request) {
         ObjectResponse response = new ObjectResponse();
-        response.setMessageCode(ApplicationEnums.URL_FAILED_CODE.getCode());
-        response.setMessage(MessageTranslator.toLocale(ApplicationEnums.URL_FAILED_CODE.getCode()));
-        HttpStatus headerStatus = HttpStatus.BAD_REQUEST;
+        HttpStatus headerStatus = HttpStatus.OK;
+        response.setMessageCode(ApplicationEnums.LOGIN_SUCCESS.getCode());
+        response.setMessage(MessageTranslator.toLocale(ApplicationEnums.LOGIN_SUCCESS.getCode()));
 
         Object result = userService.login(request);
-        if (result != null) {
-            response.setMessageCode(ApplicationEnums.URL_SUCCESS_CODE.getCode());
-            response.setMessage(MessageTranslator.toLocale(ApplicationEnums.URL_SUCCESS_CODE.getCode()));
-            headerStatus = HttpStatus.OK;
-            response.setList(result);
-        }
+        response.setList(result);
 
         return new ResponseEntity<>(response, headerStatus);
     }

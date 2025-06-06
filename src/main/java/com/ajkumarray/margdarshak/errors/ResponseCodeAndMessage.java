@@ -17,4 +17,5 @@ public class ResponseCodeAndMessage {
     public static final String LOGIN_SUCCESS = "203";
     public static final String LOGIN_FAILED = "204";
     public static final String USER_ALREADY_EXISTS = "205";
+    public static final String INVALID_TOKEN = "206";
 }

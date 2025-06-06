@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -24,7 +25,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import com.ajkumarray.margdarshak.models.response.ObjectResponse;
 
 @RestController
-@RequestMapping(value = "${spring.api}")
+@RequestMapping(value = "${spring.api}url")
 @Tag(name = "URL Shortener", description = "API for URL shortening operations")
 public class UrlController {
 
@@ -33,66 +34,50 @@ public class UrlController {
         @Autowired
         private UrlService urlService;
 
-        @PostMapping("url")
+        @PostMapping("")
         public ResponseEntity<ObjectResponse> createShortUrl(@RequestHeader HttpHeaders headers,
                         @RequestBody UrlMasterRequest request) {
 
-                String userCode = headers.getFirst(HEADER_USER_CODE);
-                HttpStatus headerStatus = HttpStatus.BAD_REQUEST;
+                String userCode = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+                HttpStatus headerStatus = HttpStatus.OK;
                 ObjectResponse response = new ObjectResponse();
-                response.setMessageCode(ApplicationEnums.URL_CREATION_FAILED.getCode());
-                response.setMessage(MessageTranslator.toLocale(ApplicationEnums.URL_CREATION_FAILED.getCode()));
+                response.setMessageCode(ApplicationEnums.URL_CREATION_SUCCESS.getCode());
+                response.setMessage(MessageTranslator.toLocale(ApplicationEnums.URL_CREATION_SUCCESS.getCode()));
 
                 Object result = urlService.createShortUrl(request, userCode);
+                response.setList(result);
 
-                if (result != null) {
-                        response.setMessageCode(ApplicationEnums.URL_CREATION_SUCCESS.getCode());
-                        response.setMessage(
-                                        MessageTranslator.toLocale(ApplicationEnums.URL_CREATION_SUCCESS.getCode()));
-                        response.setList(result);
-                        headerStatus = HttpStatus.OK;
-                }
                 return new ResponseEntity<>(response, headerStatus);
         }
 
-        @GetMapping("urls")
+        @GetMapping("")
         public ResponseEntity<ObjectResponse> getOriginalUrl(@RequestHeader HttpHeaders headers) {
-                String userCode = headers.getFirst(HEADER_USER_CODE);
+                String userCode = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
                 ObjectResponse response = new ObjectResponse();
-                HttpStatus headerStatus = HttpStatus.BAD_REQUEST;
-                response.setMessageCode(ApplicationEnums.URL_FAILED_CODE.getCode());
-                response.setMessage(MessageTranslator.toLocale(ApplicationEnums.URL_FAILED_CODE.getCode()));
+                HttpStatus headerStatus = HttpStatus.OK;
+                response.setMessageCode(ApplicationEnums.URL_SUCCESS_CODE.getCode());
+                response.setMessage(MessageTranslator.toLocale(ApplicationEnums.URL_SUCCESS_CODE.getCode()));
 
                 Object result = urlService.getAllUrls(userCode);
+                response.setList(result);
 
-                if (result != null) {
-                        response.setMessageCode(ApplicationEnums.URL_SUCCESS_CODE.getCode());
-                        response.setMessage(MessageTranslator.toLocale(ApplicationEnums.URL_SUCCESS_CODE.getCode()));
-                        response.setList(result);
-                        headerStatus = HttpStatus.OK;
-                }
                 return new ResponseEntity<>(response, headerStatus);
         }
 
-        @GetMapping("url/detail/{code}")
+        @GetMapping("/detail/{code}")
         public ResponseEntity<ObjectResponse> getUrlDetail(@PathVariable String code) {
                 ObjectResponse response = new ObjectResponse();
-                HttpStatus headerStatus = HttpStatus.BAD_REQUEST;
-                response.setMessageCode(ApplicationEnums.URL_FAILED_CODE.getCode());
-                response.setMessage(MessageTranslator.toLocale(ApplicationEnums.URL_FAILED_CODE.getCode()));
+                HttpStatus headerStatus = HttpStatus.OK;
+                response.setMessageCode(ApplicationEnums.URL_SUCCESS_CODE.getCode());
+                response.setMessage(MessageTranslator.toLocale(ApplicationEnums.URL_SUCCESS_CODE.getCode()));
 
                 Object result = urlService.getUrlDetail(code);
+                response.setList(result);
 
-                if (result != null) {
-                        response.setMessageCode(ApplicationEnums.URL_SUCCESS_CODE.getCode());
-                        response.setMessage(MessageTranslator.toLocale(ApplicationEnums.URL_SUCCESS_CODE.getCode()));
-                        response.setList(result);
-                        headerStatus = HttpStatus.OK;
-                }
                 return new ResponseEntity<>(response, headerStatus);
         }
 
-        @PutMapping("url/update/{code}")
+        @PutMapping("/update/{code}")
         public ResponseEntity<ObjectResponse> updateUrl(@PathVariable String code,
                         @RequestBody UrlMasterRequest request) {
                 ObjectResponse response = new ObjectResponse();
@@ -109,7 +94,7 @@ public class UrlController {
                 return new ResponseEntity<>(response, headerStatus);
         }
 
-        @PutMapping("url/status/{code}/{status}")
+        @PutMapping("/status/{code}/{status}")
         public ResponseEntity<ObjectResponse> updateUrlStatus(@PathVariable String code, @PathVariable String status) {
                 ObjectResponse response = new ObjectResponse();
                 HttpStatus headerStatus = HttpStatus.BAD_REQUEST;
@@ -125,7 +110,7 @@ public class UrlController {
                 return new ResponseEntity<>(response, headerStatus);
         }
 
-        @PutMapping("url/expire/{code}/{days}")
+        @PutMapping("/expire/{code}/{days}")
         public ResponseEntity<ObjectResponse> updateUrlExpire(@PathVariable String code, @PathVariable int days) {
                 ObjectResponse response = new ObjectResponse();
                 HttpStatus headerStatus = HttpStatus.BAD_REQUEST;

@@ -13,21 +13,13 @@ import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
 
-import com.ajkumarray.margdarshak.interceptor.RequestHeaderInterceptor;
-
 @Component
 @Configuration
 @EnableWebMvc
 public class WebMvcConfig implements WebMvcConfigurer {
 
-    @Bean
-    RequestHeaderInterceptor requestHeaderInterceptor() {
-        return new RequestHeaderInterceptor();
-    }
-
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(requestHeaderInterceptor());
         registry.addInterceptor(new LocaleChangeInterceptor());
     }
 

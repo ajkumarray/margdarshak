@@ -15,7 +15,8 @@ public enum ApplicationEnums {
     SIGNUP_FAILED(ResponseCodeAndMessage.SIGNUP_FAILED),
     LOGIN_SUCCESS(ResponseCodeAndMessage.LOGIN_SUCCESS),
     LOGIN_FAILED(ResponseCodeAndMessage.LOGIN_FAILED),
-    USER_ALREADY_EXISTS(ResponseCodeAndMessage.USER_ALREADY_EXISTS);
+    USER_ALREADY_EXISTS(ResponseCodeAndMessage.USER_ALREADY_EXISTS),
+    INVALID_TOKEN(ResponseCodeAndMessage.INVALID_TOKEN);
 
     private String message;
 

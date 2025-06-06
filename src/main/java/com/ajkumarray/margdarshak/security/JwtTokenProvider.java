@@ -1,12 +1,11 @@
 package com.ajkumarray.margdarshak.security;
 
 import java.util.Date;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.SignatureAlgorithm;
 
 @Component
@@ -16,30 +15,26 @@ public class JwtTokenProvider {
     private String secretKey;
 
     @Value("${jwt.expiration}")
-    private Long expiration;
+    private long expiration;
 
     public String generateToken(String userCode) {
         Date now = new Date();
-        Date expiryDate = new Date(now.getTime() + expiration);
+        Date expiryDate = new Date(System.currentTimeMillis() + expiration);
 
-        return Jwts.builder().setIssuedAt(now).setExpiration(expiryDate).claim("userCode", userCode)
-                .signWith(SignatureAlgorithm.HS256, secretKey).compact();
-    }
-
-    public Claims getClaims(String token) {
-        return Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token).getBody();
+        return Jwts.builder().setSubject(userCode).setIssuedAt(now).setExpiration(expiryDate)
+                .signWith(SignatureAlgorithm.HS256, secretKey.getBytes()).compact();
     }
 
     public String getUserCodeFromToken(String token) {
-        Claims claims = getClaims(token);
-        return claims.getSubject();
+        return Jwts.parser().setSigningKey(secretKey.getBytes()).parseClaimsJws(token.replace("Bearer ", "")).getBody()
+                .getSubject();
     }
 
     public boolean validateToken(String token) {
         try {
-            getClaims(token);
+            Jwts.parser().setSigningKey(secretKey.getBytes()).parseClaimsJws(token.replace("Bearer ", ""));
             return true;
-        } catch (Exception e) {
+        } catch (JwtException e) {
             return false;
         }
     }
