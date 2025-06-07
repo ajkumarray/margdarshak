@@ -14,8 +14,8 @@ public class AuthResponse {
     @Schema(description = "The token of the user")
     private String token;
 
-    // @JsonProperty("user")
-    // @Schema(description = "The user of the user")
-    // private UserMasterResponse user;
+    @JsonProperty("userDetails")
+    @Schema(description = "The user details of the user")
+    private UserMasterResponse userDetails;
 
 }

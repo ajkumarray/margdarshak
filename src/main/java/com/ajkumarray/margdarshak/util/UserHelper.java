@@ -46,19 +46,17 @@ public class UserHelper {
 
     public UserMasterResponse prepareUserResponse(UserMasterEntity userEntity) {
         UserMasterResponse userResponse = new UserMasterResponse();
-        userResponse.setUserCode(userEntity.getUserCode());
         userResponse.setName(userEntity.getName());
         userResponse.setEmail(userEntity.getEmail());
         userResponse.setProfilePic(userEntity.getProfilePic());
         userResponse.setStatus(userEntity.getStatus());
-        userResponse.setCreatedAt(userEntity.getCreatedAt());
-        userResponse.setUpdatedAt(userEntity.getUpdatedAt());
         return userResponse;
     }
 
     public AuthResponse prepareAuthResponse(UserMasterEntity userEntity) {
         AuthResponse authResponse = new AuthResponse();
         String token = jwtTokenProvider.generateToken(userEntity.getUserCode());
+        authResponse.setUserDetails(prepareUserResponse(userEntity));
         authResponse.setToken(token);
         return authResponse;
     }
