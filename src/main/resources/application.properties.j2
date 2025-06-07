@@ -1,12 +1,15 @@
 # Application Configuration
-spring.application.name=Margdarshak
-spring.main.banner-mode=off
+# spring.application.name=Margdarshak
+# spring.main.banner-mode=off
 
 # URL Shortener Configuration
-url.shortener.base-url={{ URL_SHORTENER_BASE_URL }}
+url.shortener.base-url={{ SHORTENER_BASE_URL }}
+user.password.salt={{ PASSWORD_SALT }}
 spring.api=/api/v1/
-url.shortener.protocol=http
-url.shortener.context-path=/api/v1/urls
+
+# JWT Configuration
+jwt.secret={{ JWT_SECRET }}
+jwt.expiration={{ JWT_EXPIRATION }}
 
 # Database Configuration
 spring.datasource.url={{ DATABASE_URL }}
@@ -16,8 +19,8 @@ spring.datasource.driver-class-name=org.postgresql.Driver
 
 # JPA/Hibernate Configuration
 spring.jpa.hibernate.ddl-auto=update
-spring.jpa.show-sql=true
-spring.jpa.properties.hibernate.format_sql=true
+spring.jpa.show-sql=false
+spring.jpa.properties.hibernate.format_sql=false
 spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
 
 # Server Configuration
