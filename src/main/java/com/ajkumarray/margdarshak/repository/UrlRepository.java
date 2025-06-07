@@ -1,14 +1,18 @@
 package com.ajkumarray.margdarshak.repository;
 
+import java.util.List;
 import java.util.Optional;
-
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import com.ajkumarray.margdarshak.entity.UrlEntity;
+import com.ajkumarray.margdarshak.entity.UrlMasterEntity;
+import com.ajkumarray.margdarshak.enums.UrlStatusEnums;
 
 @Repository
-public interface UrlRepository extends JpaRepository<UrlEntity, Long> {
-    Optional<UrlEntity> findByShortUrl(String shortUrl);
-    boolean existsByShortUrl(String shortUrl);
-} 
+public interface UrlRepository extends JpaRepository<UrlMasterEntity, Long> {
+    List<UrlMasterEntity> findAllByCreatedByAndStatusAndDeleted(String createdBy, UrlStatusEnums status,
+            boolean deleted);
+
+    Optional<UrlMasterEntity> findByCodeAndStatusAndDeleted(String code, UrlStatusEnums status, boolean deleted);
+
+}

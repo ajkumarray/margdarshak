@@ -5,12 +5,15 @@ import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import com.ajkumarray.margdarshak.entity.UserEntity;
+import com.ajkumarray.margdarshak.entity.UserMasterEntity;
+import com.ajkumarray.margdarshak.enums.UserStatusEnums;
 
 @Repository
-public interface UserRepository extends JpaRepository<UserEntity, Long> {
-    Optional<UserEntity> findByEmail(String email);
-    Optional<UserEntity> findByUserCode(String userCode);
-    boolean existsByEmail(String email);
-    boolean existsByUserCode(String userCode);
-} 
+public interface UserRepository extends JpaRepository<UserMasterEntity, Long> {
+
+    Optional<UserMasterEntity> findByUserCodeAndStatusAndDeleted(String userCode, UserStatusEnums status,
+            boolean deleted);
+
+    Optional<UserMasterEntity> findByEmail(String email);
+
+}
