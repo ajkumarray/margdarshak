@@ -81,48 +81,11 @@ public class UrlController {
         public ResponseEntity<ObjectResponse> updateUrl(@PathVariable String code,
                         @RequestBody UrlMasterRequest request) {
                 ObjectResponse response = new ObjectResponse();
-                HttpStatus headerStatus = HttpStatus.BAD_REQUEST;
-                response.setMessageCode(ApplicationEnums.URL_FAILED_CODE.getCode());
-                response.setMessage(MessageTranslator.toLocale(ApplicationEnums.URL_FAILED_CODE.getCode()));
+                HttpStatus headerStatus = HttpStatus.OK;
 
                 Object result = urlService.updateUrl(code, request);
-
-                if (result != null) {
-                        response.setMessageCode(ApplicationEnums.URL_SUCCESS_CODE.getCode());
-                        response.setMessage(MessageTranslator.toLocale(ApplicationEnums.URL_SUCCESS_CODE.getCode()));
-                }
+                response.setList(result);
                 return new ResponseEntity<>(response, headerStatus);
         }
 
-        @PutMapping("/status/{code}/{status}")
-        public ResponseEntity<ObjectResponse> updateUrlStatus(@PathVariable String code, @PathVariable String status) {
-                ObjectResponse response = new ObjectResponse();
-                HttpStatus headerStatus = HttpStatus.BAD_REQUEST;
-                response.setMessageCode(ApplicationEnums.URL_FAILED_CODE.getCode());
-                response.setMessage(MessageTranslator.toLocale(ApplicationEnums.URL_FAILED_CODE.getCode()));
-
-                Object result = urlService.updateUrlStatus(code, status);
-
-                if (result != null) {
-                        response.setMessageCode(ApplicationEnums.URL_SUCCESS_CODE.getCode());
-                        response.setMessage(MessageTranslator.toLocale(ApplicationEnums.URL_SUCCESS_CODE.getCode()));
-                }
-                return new ResponseEntity<>(response, headerStatus);
-        }
-
-        @PutMapping("/expire/{code}/{days}")
-        public ResponseEntity<ObjectResponse> updateUrlExpire(@PathVariable String code, @PathVariable int days) {
-                ObjectResponse response = new ObjectResponse();
-                HttpStatus headerStatus = HttpStatus.BAD_REQUEST;
-                response.setMessageCode(ApplicationEnums.URL_FAILED_CODE.getCode());
-                response.setMessage(MessageTranslator.toLocale(ApplicationEnums.URL_FAILED_CODE.getCode()));
-
-                Object result = urlService.updateUrlExpire(code, days);
-
-                if (result != null) {
-                        response.setMessageCode(ApplicationEnums.URL_SUCCESS_CODE.getCode());
-                        response.setMessage(MessageTranslator.toLocale(ApplicationEnums.URL_SUCCESS_CODE.getCode()));
-                }
-                return new ResponseEntity<>(response, headerStatus);
-        }
 }

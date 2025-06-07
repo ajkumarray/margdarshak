@@ -19,10 +19,6 @@ public interface UrlService {
 
     UrlMasterResponse updateUrl(String code, UrlMasterRequest request);
 
-    UrlMasterResponse updateUrlStatus(String code, String status);
-
-    UrlMasterResponse updateUrlExpire(String code, int days);
-
     String getOriginalUrl(String code);
 
 }
