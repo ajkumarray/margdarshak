@@ -35,7 +35,7 @@ jobs:
         run: |
           mkdir -p /tmp/secrets
           aws secretsmanager get-secret-value \
-            --secret-id arn:aws:secretsmanager:ap-south-1:905418404019:secret:margdarshak-GPVtKu \
+            --secret-id arn:${{ secrets.AWS_SECRET_HOST }} \
             --region ap-south-1 \
             --query SecretString \
             --output text > /tmp/secrets/env.json
