@@ -5,6 +5,9 @@ import java.security.SecureRandom;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import org.springframework.util.ObjectUtils;
+
+import com.fasterxml.jackson.databind.JsonNode;
 
 @Component
 public class CommonFunctionHelper {
@@ -38,5 +41,18 @@ public class CommonFunctionHelper {
 
         log.error(loggerMessage);
         log.error(exception.getMessage());
+    }
+
+    public boolean isEmptyOrBlank(Object obj) {
+        if (ObjectUtils.isEmpty(obj)) {
+            return true;
+        }
+        if (obj instanceof String string) {
+            return string.isBlank();
+        }
+        if (obj instanceof JsonNode jsonNode) {
+            return jsonNode.isNull();
+        }
+        return false;
     }
 }

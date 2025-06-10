@@ -32,6 +32,9 @@ public class ApplicationExceptionHandler {
         if (ApplicationEnums.INVALID_TOKEN.getCode().equals(ex.getErrorCode())) {
             statusCode = HttpStatus.UNAUTHORIZED;
         }
+        if (ApplicationEnums.INVALID_HEADER_REQUEST.getCode().equals(ex.getErrorCode())) {
+            statusCode = HttpStatus.BAD_REQUEST;
+        }
         return new ResponseEntity<>(response, statusCode);
     }
 

@@ -3,7 +3,6 @@ package com.ajkumarray.margdarshak.controller;
 import com.ajkumarray.margdarshak.enums.ApplicationEnums;
 import com.ajkumarray.margdarshak.util.MessageTranslator;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
