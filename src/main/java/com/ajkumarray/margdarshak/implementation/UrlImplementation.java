@@ -1,5 +1,6 @@
 package com.ajkumarray.margdarshak.implementation;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -100,8 +101,8 @@ public class UrlImplementation implements UrlService {
 
     @Override
     public String getOriginalUrl(String code) {
-        Optional<UrlMasterEntity> urlEntity = urlRepository.findByCodeAndStatusAndDeleted(code, UrlStatusEnums.ACTIVE,
-                false);
+        Optional<UrlMasterEntity> urlEntity = urlRepository.findByCodeAndStatusAndExpiresAtAfterAndDeleted(code,
+                UrlStatusEnums.ACTIVE, LocalDateTime.now(), false);
         if (urlEntity.isPresent()) {
             UrlMasterEntity url = urlEntity.get();
             return urlHelper.decodeUrl(url.getUrl());
