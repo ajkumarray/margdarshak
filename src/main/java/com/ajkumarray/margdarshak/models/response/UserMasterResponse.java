@@ -1,6 +1,7 @@
 package com.ajkumarray.margdarshak.models.response;
 
 import com.ajkumarray.margdarshak.enums.UserStatusEnums;
+import com.ajkumarray.margdarshak.enums.UserVerificationStatusEnums;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -26,5 +27,9 @@ public class UserMasterResponse {
     @JsonProperty("status")
     @Schema(description = "The status of the user")
     private UserStatusEnums status;
+
+    @JsonProperty("verificationStatus")
+    @Schema(description = "The email verification status of the user")
+    private UserVerificationStatusEnums verificationStatus;
 
 }

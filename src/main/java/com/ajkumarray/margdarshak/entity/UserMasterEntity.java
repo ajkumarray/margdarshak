@@ -1,6 +1,7 @@
 package com.ajkumarray.margdarshak.entity;
 
 import com.ajkumarray.margdarshak.enums.UserStatusEnums;
+import com.ajkumarray.margdarshak.enums.UserVerificationStatusEnums;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -24,7 +25,7 @@ public class UserMasterEntity extends CommonEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "userCode", nullable = false)
+    @Column(name = "user_code", nullable = false)
     private String userCode;
 
     @Column(name = "name", nullable = false)
@@ -36,11 +37,15 @@ public class UserMasterEntity extends CommonEntity {
     @Column(name = "password", nullable = false)
     private String password;
 
-    @Column(name = "profilePic", nullable = true)
+    @Column(name = "profile_pic", nullable = true)
     private String profilePic;
 
     @Column(name = "status", nullable = false)
     @Enumerated(EnumType.STRING)
     private UserStatusEnums status;
+
+    @Column(name = "verification_status", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private UserVerificationStatusEnums verificationStatus;
 
 }

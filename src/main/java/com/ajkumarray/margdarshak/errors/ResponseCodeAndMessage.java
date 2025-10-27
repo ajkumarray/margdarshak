@@ -6,8 +6,8 @@ public class ResponseCodeAndMessage {
         throw new UnsupportedOperationException("This is a ResponseCodeAndMessage class and cannot be instantiated");
     }
 
-    public static final String SUCCESS_CODE = "101";
-    public static final String FAILED_CODE = "102";
+    public static final String SUCCESS_MESSAGE = "101";
+    public static final String FAILED_MESSAGE = "102";
     public static final String INVALID_URL_CODE = "103";
     public static final String URL_CREATION_SUCCESS = "105";
     public static final String URL_CREATION_FAILED = "106";
@@ -19,4 +19,5 @@ public class ResponseCodeAndMessage {
     public static final String USER_ALREADY_EXISTS = "205";
     public static final String INVALID_TOKEN = "206";
     public static final String INVALID_HEADER_REQUEST = "207";
+    public static final String INVALID_USER_CODE = "208";
 }

@@ -91,8 +91,8 @@ public class UrlController {
                 String userCode = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
                 ObjectResponse response = new ObjectResponse();
                 HttpStatus headerStatus = HttpStatus.OK;
-                response.setMessageCode(ApplicationEnums.URL_SUCCESS_CODE.getCode());
-                response.setMessage(MessageTranslator.toLocale(ApplicationEnums.URL_SUCCESS_CODE.getCode()));
+                response.setMessageCode(ApplicationEnums.SUCCESS_MESSAGE.getCode());
+                response.setMessage(MessageTranslator.toLocale(ApplicationEnums.SUCCESS_MESSAGE.getCode()));
 
                 Object result = urlService.getAllUrls(userCode);
                 response.setList(result);
@@ -115,8 +115,8 @@ public class UrlController {
                         @Parameter(description = "Short URL code") @PathVariable String code) {
                 ObjectResponse response = new ObjectResponse();
                 HttpStatus headerStatus = HttpStatus.OK;
-                response.setMessageCode(ApplicationEnums.URL_SUCCESS_CODE.getCode());
-                response.setMessage(MessageTranslator.toLocale(ApplicationEnums.URL_SUCCESS_CODE.getCode()));
+                response.setMessageCode(ApplicationEnums.SUCCESS_MESSAGE.getCode());
+                response.setMessage(MessageTranslator.toLocale(ApplicationEnums.SUCCESS_MESSAGE.getCode()));
 
                 Object result = urlService.getUrlDetail(code);
                 response.setList(result);
@@ -142,6 +142,8 @@ public class UrlController {
                         @Parameter(description = "Updated URL information") @RequestBody UrlMasterRequest request) {
                 ObjectResponse response = new ObjectResponse();
                 HttpStatus headerStatus = HttpStatus.OK;
+                response.setMessageCode(ApplicationEnums.SUCCESS_MESSAGE.getCode());
+                response.setMessage(MessageTranslator.toLocale(ApplicationEnums.SUCCESS_MESSAGE.getCode()));
 
                 Object result = urlService.updateUrl(code, request);
                 response.setList(result);

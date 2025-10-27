@@ -50,6 +50,7 @@ public class UserHelper {
         userResponse.setEmail(userEntity.getEmail());
         userResponse.setProfilePic(userEntity.getProfilePic());
         userResponse.setStatus(userEntity.getStatus());
+        userResponse.setVerificationStatus(userEntity.getVerificationStatus());
         return userResponse;
     }
 
@@ -59,6 +60,20 @@ public class UserHelper {
         authResponse.setUserDetails(prepareUserResponse(userEntity));
         authResponse.setToken(token);
         return authResponse;
+    }
+
+    public UserMasterEntity prepareUserUpdateEntity(UserMasterEntity userEntity, UserMasterRequest request) {
+        if (!commonFunctionHelper.isEmptyOrBlank(request.getName())) {
+            userEntity.setName(request.getName());
+        }
+        if (!commonFunctionHelper.isEmptyOrBlank(request.getEmail())) {
+            userEntity.setEmail(request.getEmail());
+        }
+        if (!commonFunctionHelper.isEmptyOrBlank(request.getProfilePic())) {
+            userEntity.setProfilePic(request.getProfilePic());
+        }
+        userEntity.setUpdatedAt(LocalDateTime.now());
+        return userEntity;
     }
 
 }

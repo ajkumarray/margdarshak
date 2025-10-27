@@ -56,8 +56,8 @@ public class UrlImplementation implements UrlService {
             return urlEntities.stream().map(urlHelper::prepareUrlResponse).collect(Collectors.toList());
         } catch (Exception e) {
             commonFunctionHelper.commonLoggerHelper(e, "UrlImplementation -> getAllUrls failed");
-            throw new ApplicationException(MessageTranslator.toLocale(ApplicationEnums.URL_FAILED_CODE.getCode()),
-                    ApplicationEnums.URL_FAILED_CODE.getCode());
+            throw new ApplicationException(MessageTranslator.toLocale(ApplicationEnums.FAILED_MESSAGE.getCode()),
+                    ApplicationEnums.FAILED_MESSAGE.getCode());
         }
     }
 
@@ -74,8 +74,8 @@ public class UrlImplementation implements UrlService {
             }
         } catch (Exception e) {
             commonFunctionHelper.commonLoggerHelper(e, "UrlImplementation -> getUrlDetail failed");
-            throw new ApplicationException(MessageTranslator.toLocale(ApplicationEnums.URL_FAILED_CODE.getCode()),
-                    ApplicationEnums.URL_FAILED_CODE.getCode());
+            throw new ApplicationException(MessageTranslator.toLocale(ApplicationEnums.FAILED_MESSAGE.getCode()),
+                    ApplicationEnums.FAILED_MESSAGE.getCode());
         }
     }
 
@@ -94,8 +94,8 @@ public class UrlImplementation implements UrlService {
             }
         } catch (Exception e) {
             commonFunctionHelper.commonLoggerHelper(e, "UrlImplementation -> updateUrl failed");
-            throw new ApplicationException(MessageTranslator.toLocale(ApplicationEnums.URL_FAILED_CODE.getCode()),
-                    ApplicationEnums.URL_FAILED_CODE.getCode());
+            throw new ApplicationException(MessageTranslator.toLocale(ApplicationEnums.FAILED_MESSAGE.getCode()),
+                    ApplicationEnums.FAILED_MESSAGE.getCode());
         }
     }
 

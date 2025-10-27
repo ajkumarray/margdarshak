@@ -15,8 +15,10 @@ import com.ajkumarray.margdarshak.entity.UserMasterEntity;
 import com.ajkumarray.margdarshak.util.CommonFunctionHelper;
 import com.ajkumarray.margdarshak.exception.ApplicationException;
 import com.ajkumarray.margdarshak.enums.ApplicationEnums;
+import com.ajkumarray.margdarshak.enums.UserStatusEnums;
 import com.ajkumarray.margdarshak.util.MessageTranslator;
 import com.ajkumarray.margdarshak.models.response.AuthResponse;
+import com.ajkumarray.margdarshak.models.response.UserMasterResponse;
 
 @Component
 public class UserImplementation implements UserService {
@@ -49,8 +51,7 @@ public class UserImplementation implements UserService {
             throw e;
         } catch (Exception e) {
             commonFunctionHelper.commonLoggerHelper(e, "UserImplementation -> register failed");
-            throw new ApplicationException(
-                    MessageTranslator.toLocale(ApplicationEnums.SIGNUP_FAILED.getCode()),
+            throw new ApplicationException(MessageTranslator.toLocale(ApplicationEnums.SIGNUP_FAILED.getCode()),
                     ApplicationEnums.SIGNUP_FAILED.getCode());
         }
     }
@@ -63,8 +64,7 @@ public class UserImplementation implements UserService {
                 if (passwordEncoder.matches(request.getPassword(), userEntity.get().getPassword())) {
                     return userHelper.prepareAuthResponse(userEntity.get());
                 } else {
-                    throw new ApplicationException(
-                            MessageTranslator.toLocale(ApplicationEnums.LOGIN_FAILED.getCode()),
+                    throw new ApplicationException(MessageTranslator.toLocale(ApplicationEnums.LOGIN_FAILED.getCode()),
                             ApplicationEnums.LOGIN_FAILED.getCode());
                 }
             } else {
@@ -77,6 +77,49 @@ public class UserImplementation implements UserService {
             commonFunctionHelper.commonLoggerHelper(e, "UserImplementation -> login failed");
             throw new ApplicationException(MessageTranslator.toLocale(ApplicationEnums.LOGIN_FAILED.getCode()),
                     ApplicationEnums.LOGIN_FAILED.getCode());
+        }
+    }
+
+    @Override
+    public UserMasterResponse getUserDetails(String userCode) {
+        try {
+            Optional<UserMasterEntity> userEntity = userRepository.findByUserCodeAndStatusAndDeleted(userCode,
+                    UserStatusEnums.ACTIVE, false);
+            if (userEntity.isPresent()) {
+                return userHelper.prepareUserResponse(userEntity.get());
+            } else {
+                throw new ApplicationException(MessageTranslator.toLocale(ApplicationEnums.INVALID_USER_CODE.getCode()),
+                        ApplicationEnums.INVALID_USER_CODE.getCode());
+            }
+        } catch (ApplicationException e) {
+            throw e;
+        } catch (Exception e) {
+            commonFunctionHelper.commonLoggerHelper(e, "UserImplementation -> getUserDetails failed");
+            throw new ApplicationException(MessageTranslator.toLocale(ApplicationEnums.FAILED_MESSAGE.getCode()),
+                    ApplicationEnums.FAILED_MESSAGE.getCode());
+        }
+    }
+
+    @Override
+    public UserMasterResponse updateUserDetails(String userCode, UserMasterRequest request) {
+        try {
+            Optional<UserMasterEntity> userEntity = userRepository.findByUserCodeAndStatusAndDeleted(userCode,
+                    UserStatusEnums.ACTIVE, false);
+            if (userEntity.isPresent()) {
+                UserMasterEntity user = userHelper.prepareUserUpdateEntity(userEntity.get(), request);
+                userRepository.save(user);
+                return userHelper.prepareUserResponse(user);
+            } else {
+                throw new ApplicationException(MessageTranslator.toLocale(ApplicationEnums.INVALID_USER_CODE.getCode()),
+                        ApplicationEnums.INVALID_USER_CODE.getCode());
+            }
+
+        } catch (ApplicationException e) {
+            throw e;
+        } catch (Exception e) {
+            commonFunctionHelper.commonLoggerHelper(e, "UserImplementation -> updateUserDetails failed");
+            throw new ApplicationException(MessageTranslator.toLocale(ApplicationEnums.FAILED_MESSAGE.getCode()),
+                    ApplicationEnums.FAILED_MESSAGE.getCode());
         }
     }
 
