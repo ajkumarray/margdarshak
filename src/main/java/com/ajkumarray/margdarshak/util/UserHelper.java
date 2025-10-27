@@ -12,6 +12,7 @@ import com.ajkumarray.margdarshak.models.request.UserMasterRequest;
 import com.ajkumarray.margdarshak.models.response.UserMasterResponse;
 import com.ajkumarray.margdarshak.models.response.AuthResponse;
 import com.ajkumarray.margdarshak.enums.UserStatusEnums;
+import com.ajkumarray.margdarshak.enums.UserVerificationStatusEnums;
 import com.ajkumarray.margdarshak.security.JwtTokenProvider;
 
 @Component
@@ -37,6 +38,7 @@ public class UserHelper {
         userEntity.setPassword(passwordEncoder.encode(request.getPassword()));
         userEntity.setProfilePic(request.getProfilePic());
         userEntity.setStatus(UserStatusEnums.ACTIVE);
+        userEntity.setVerificationStatus(UserVerificationStatusEnums.PENDING);
         userEntity.setDeleted(false);
         userEntity.setCreatedAt(LocalDateTime.now());
         userEntity.setUpdatedAt(LocalDateTime.now());
