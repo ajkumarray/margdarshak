@@ -19,7 +19,7 @@ public class JwtTokenProvider {
 
     public String generateToken(String userCode) {
         Date now = new Date();
-        Date expiryDate = new Date(System.currentTimeMillis() + expiration);
+        Date expiryDate = new Date(System.currentTimeMillis() + expiration * 1000);
 
         return Jwts.builder().setSubject(userCode).setIssuedAt(now).setExpiration(expiryDate)
                 .signWith(SignatureAlgorithm.HS256, secretKey.getBytes()).compact();

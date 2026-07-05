@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ajkumarray.margdarshak.models.request.UrlMasterRequest;
@@ -87,14 +88,16 @@ public class UrlController {
                         @ApiResponse(responseCode = "401", description = "Unauthorized - Authentication required") })
         @GetMapping("")
         public ResponseEntity<ObjectResponse> getOriginalUrl(
-                        @Parameter(description = "HTTP Headers") @RequestHeader HttpHeaders headers) {
+                        @Parameter(description = "HTTP Headers") @RequestHeader HttpHeaders headers,
+                        @Parameter(description = "Page number (0-indexed)") @RequestParam(defaultValue = "0") int page,
+                        @Parameter(description = "Number of records per page") @RequestParam(defaultValue = "15") int size) {
                 String userCode = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
                 ObjectResponse response = new ObjectResponse();
                 HttpStatus headerStatus = HttpStatus.OK;
                 response.setMessageCode(ApplicationEnums.SUCCESS_MESSAGE.getCode());
                 response.setMessage(MessageTranslator.toLocale(ApplicationEnums.SUCCESS_MESSAGE.getCode()));
 
-                Object result = urlService.getAllUrls(userCode);
+                Object result = urlService.getAllUrls(userCode, page, size);
                 response.setList(result);
 
                 return new ResponseEntity<>(response, headerStatus);

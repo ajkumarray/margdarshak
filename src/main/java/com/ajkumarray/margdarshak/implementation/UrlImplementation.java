@@ -6,6 +6,10 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 
 import com.ajkumarray.margdarshak.entity.UrlMasterEntity;
@@ -13,6 +17,7 @@ import com.ajkumarray.margdarshak.enums.ApplicationEnums;
 import com.ajkumarray.margdarshak.enums.UrlStatusEnums;
 import com.ajkumarray.margdarshak.exception.ApplicationException;
 import com.ajkumarray.margdarshak.models.request.UrlMasterRequest;
+import com.ajkumarray.margdarshak.models.response.PagedResponse;
 import com.ajkumarray.margdarshak.models.response.UrlMasterResponse;
 import com.ajkumarray.margdarshak.repository.UrlRepository;
 import com.ajkumarray.margdarshak.service.UrlService;
@@ -49,11 +54,17 @@ public class UrlImplementation implements UrlService {
     }
 
     @Override
-    public List<UrlMasterResponse> getAllUrls(String userCode) {
+    public PagedResponse<UrlMasterResponse> getAllUrls(String userCode, int page, int size) {
         try {
-            List<UrlMasterEntity> urlEntities = urlRepository.findAllByCreatedByAndStatusAndDeleted(userCode,
-                    UrlStatusEnums.ACTIVE, false);
-            return urlEntities.stream().map(urlHelper::prepareUrlResponse).collect(Collectors.toList());
+            int safePage = Math.max(page, 0);
+            int safeSize = Math.min(Math.max(size, 1), 100);
+            Pageable pageable = PageRequest.of(safePage, safeSize, Sort.by("createdAt").descending());
+            Page<UrlMasterEntity> urlPage = urlRepository.findAllByCreatedByAndStatusAndDeleted(userCode,
+                    UrlStatusEnums.ACTIVE, false, pageable);
+            List<UrlMasterResponse> content = urlPage.getContent().stream().map(urlHelper::prepareUrlResponse)
+                    .collect(Collectors.toList());
+            return new PagedResponse<>(content, urlPage.getTotalElements(), urlPage.getTotalPages(), safePage,
+                    safeSize);
         } catch (Exception e) {
             commonFunctionHelper.commonLoggerHelper(e, "UrlImplementation -> getAllUrls failed");
             throw new ApplicationException(MessageTranslator.toLocale(ApplicationEnums.FAILED_MESSAGE.getCode()),
