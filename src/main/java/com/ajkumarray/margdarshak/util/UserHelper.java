@@ -3,7 +3,6 @@ package com.ajkumarray.margdarshak.util;
 import java.time.LocalDateTime;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
@@ -17,9 +16,6 @@ import com.ajkumarray.margdarshak.security.JwtTokenProvider;
 
 @Component
 public class UserHelper {
-
-    @Value("${user.password.salt}")
-    private String passwordSalt;
 
     @Autowired
     private CommonFunctionHelper commonFunctionHelper;

@@ -1,0 +1,53 @@
+# Active only under the "lambda" Spring profile (LambdaHandler passes it).
+# DB creds, jwt.secret and url.shortener.base-url are pulled from SSM Parameter Store at
+# startup (baked into the SnapStart snapshot). SSM params live under /config/margdarshak/,
+# e.g. /config/margdarshak/spring.datasource.password -> property spring.datasource.password.
+spring:
+  config:
+    import: "optional:aws-parameterstore:/config/margdarshak/"
+  cloud:
+    aws:
+      region:
+        static: ${AWS_REGION:ap-southeast-1}
+  main:
+    banner-mode: "off"
+  api: /api/v1/
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      schema: public
+      # One connection per Lambda execution environment; the Neon pooler fans out across many.
+      maximum-pool-size: 1
+      minimum-idle: 0
+      connection-timeout: 8000
+  jpa:
+    open-in-view: false
+    show-sql: false
+    hibernate:
+      ddl-auto: none
+    properties:
+      hibernate:
+        default_schema: public
+        # Explicit dialect + no metadata probe => cold start / snapshot never needs the DB.
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        temp:
+          use_jdbc_metadata_defaults: false
+
+jwt:
+  expiration: 604800
+
+url:
+  shortener:
+    base-url: ${URL_SHORTENER_BASE_URL:https://url.ajkumarray.com/}
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
