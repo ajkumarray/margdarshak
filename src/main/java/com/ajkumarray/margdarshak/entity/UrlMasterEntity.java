@@ -2,8 +2,6 @@ package com.ajkumarray.margdarshak.entity;
 
 import java.time.LocalDateTime;
 
-import org.hibernate.annotations.Type;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;

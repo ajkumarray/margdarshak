@@ -1,16 +1,13 @@
 package com.ajkumarray.margdarshak.util;
 
-import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.time.LocalDateTime;
-import java.util.Random;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import com.ajkumarray.margdarshak.constants.UrlConstants;
 import com.ajkumarray.margdarshak.entity.UrlMasterEntity;
 import com.ajkumarray.margdarshak.enums.UrlStatusEnums;
 import com.ajkumarray.margdarshak.exception.ApplicationException;
@@ -25,8 +22,6 @@ public final class UrlHelper {
 
     @Autowired
     private CommonFunctionHelper commonFunctionHelper;
-
-    private static final Random RANDOM = new Random();
 
     @Value("${url.shortener.base-url}")
     private String baseUrl;

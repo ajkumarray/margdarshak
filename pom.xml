@@ -30,16 +30,10 @@
         <java.version>21</java.version>
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
-		<hibernate-types-60.version>2.21.1</hibernate-types-60.version>
-		
+
         <skip.toolchain>false</skip.toolchain>
     </properties>
     <dependencies>
-        <dependency>
-            <groupId>com.vladmihalcea</groupId>
-            <artifactId>hibernate-types-60</artifactId>
-            <version>${hibernate-types-60.version}</version> 
-        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
@@ -47,10 +41,6 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -91,7 +81,41 @@
             <artifactId>jjwt</artifactId>
             <version>0.9.1</version>
         </dependency>
+        <!--
+          jjwt 0.9.1 calls javax.xml.bind.DatatypeConverter, which is not part of the JDK
+          since Java 11. Until jjwt is upgraded to 0.12.x this API jar must be on the classpath.
+        -->
+        <dependency>
+            <groupId>javax.xml.bind</groupId>
+            <artifactId>jaxb-api</artifactId>
+            <version>2.3.1</version>
+        </dependency>
+        <!-- AWS Lambda: adapter that runs the Spring MVC app behind a Function URL. -->
+        <dependency>
+            <groupId>com.amazonaws.serverless</groupId>
+            <artifactId>aws-serverless-java-container-springboot3</artifactId>
+            <version>2.1.5</version>
+        </dependency>
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-lambda-java-core</artifactId>
+            <version>1.2.3</version>
+        </dependency>
     </dependencies>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- Spring Cloud AWS 3.1.x aligns with Spring Boot 3.2. Used by the lambda profile
+                 to import config from SSM Parameter Store. -->
+            <dependency>
+                <groupId>io.awspring.cloud</groupId>
+                <artifactId>spring-cloud-aws-dependencies</artifactId>
+                <version>3.1.1</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <build>
         <plugins>
@@ -158,6 +182,94 @@
                             <execution>
                                 <id>toolchain</id>
                                 <phase>none</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <!--
+          Builds target/margdarshak-lambda.zip for AWS Lambda: our classes jar at the root plus
+          every runtime dependency under lib/ (Lambda adds lib/*.jar to the classpath). This
+          layout keeps each jar's META-INF/spring.factories, spring/*.imports and services files
+          intact - an uber-jar would merge and clobber them.
+          Usage: mvn -P lambda -DskipTests clean package
+          The default build (Spring Boot fat jar for local / EC2) is unaffected.
+        -->
+        <profile>
+            <id>lambda</id>
+            <properties>
+                <skip.toolchain>true</skip.toolchain>
+                <spring-boot.repackage.skip>true</spring-boot.repackage.skip>
+            </properties>
+            <dependencies>
+                <!-- Only on Lambda: pulls DB creds / JWT secret from SSM Parameter Store
+                     via spring.config.import in application-lambda.yml. -->
+                <dependency>
+                    <groupId>io.awspring.cloud</groupId>
+                    <artifactId>spring-cloud-aws-starter-parameter-store</artifactId>
+                </dependency>
+            </dependencies>
+            <build>
+                <finalName>margdarshak</finalName>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-toolchains-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>toolchain</id>
+                                <phase>none</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-jar-plugin</artifactId>
+                        <configuration>
+                            <!-- dev/EC2 config stays out of the Lambda artifact; Lambda uses
+                                 application-lambda.yml + env vars from SSM. -->
+                            <excludes>
+                                <exclude>application.properties</exclude>
+                                <exclude>application.properties.j2</exclude>
+                            </excludes>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-dependency-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>lambda-copy-deps</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>copy-dependencies</goal>
+                                </goals>
+                                <configuration>
+                                    <outputDirectory>${project.build.directory}/lambda/lib</outputDirectory>
+                                    <includeScope>runtime</includeScope>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-assembly-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>lambda-zip</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>single</goal>
+                                </goals>
+                                <configuration>
+                                    <finalName>margdarshak-lambda</finalName>
+                                    <appendAssemblyId>false</appendAssemblyId>
+                                    <descriptors>
+                                        <descriptor>src/assembly/lambda.xml</descriptor>
+                                    </descriptors>
+                                </configuration>
                             </execution>
                         </executions>
                     </plugin>

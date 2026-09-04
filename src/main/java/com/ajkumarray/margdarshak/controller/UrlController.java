@@ -3,7 +3,6 @@ package com.ajkumarray.margdarshak.controller;
 import com.ajkumarray.margdarshak.enums.ApplicationEnums;
 import com.ajkumarray.margdarshak.util.MessageTranslator;
 
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -12,7 +11,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -49,7 +47,6 @@ public class UrlController {
         /**
          * Creates a new shortened URL.
          *
-         * @param headers HTTP headers containing user information
          * @param request The URL shortening request containing the original URL and
          *                optional expiration
          * @return ResponseEntity containing the shortened URL information
@@ -61,7 +58,6 @@ public class UrlController {
                         @ApiResponse(responseCode = "401", description = "Unauthorized - Authentication required") })
         @PostMapping("")
         public ResponseEntity<ObjectResponse> createShortUrl(
-                        @Parameter(description = "HTTP Headers") @RequestHeader HttpHeaders headers,
                         @Parameter(description = "URL shortening request") @RequestBody UrlMasterRequest request) {
 
                 String userCode = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -79,7 +75,6 @@ public class UrlController {
         /**
          * Retrieves all URLs for the authenticated user.
          *
-         * @param headers HTTP headers containing user information
          * @return ResponseEntity containing the list of user's URLs
          */
         @Operation(summary = "Get All URLs", description = "Retrieves all shortened URLs for the authenticated user")
@@ -88,7 +83,6 @@ public class UrlController {
                         @ApiResponse(responseCode = "401", description = "Unauthorized - Authentication required") })
         @GetMapping("")
         public ResponseEntity<ObjectResponse> getOriginalUrl(
-                        @Parameter(description = "HTTP Headers") @RequestHeader HttpHeaders headers,
                         @Parameter(description = "Page number (0-indexed)") @RequestParam(defaultValue = "0") int page,
                         @Parameter(description = "Number of records per page") @RequestParam(defaultValue = "15") int size) {
                 String userCode = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();

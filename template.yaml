@@ -1,0 +1,48 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: margdarshak URL shortener - Spring Boot on AWS Lambda with SnapStart
+
+Globals:
+  Function:
+    Runtime: java21
+    MemorySize: 1024
+    Timeout: 30
+
+Resources:
+  MargdarshakFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: margdarshak
+      Handler: com.ajkumarray.margdarshak.LambdaHandler
+      CodeUri: target/margdarshak-lambda.zip
+      # SnapStart requires published versions; the alias keeps the Function URL pinned to one.
+      AutoPublishAlias: live
+      SnapStart:
+        ApplyOn: PublishedVersions
+      Environment:
+        Variables:
+          SPRING_PROFILES_ACTIVE: lambda
+      Policies:
+        - Statement:
+            - Sid: ReadMargdarshakParams
+              Effect: Allow
+              Action:
+                - ssm:GetParametersByPath
+                - ssm:GetParameters
+                - ssm:GetParameter
+              Resource: !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/config/margdarshak/*
+            - Sid: DecryptSsmSecureStrings
+              Effect: Allow
+              Action: kms:Decrypt
+              Resource: "*"
+              Condition:
+                StringEquals:
+                  kms:ViaService: !Sub ssm.${AWS::Region}.amazonaws.com
+      FunctionUrlConfig:
+        AuthType: NONE
+        InvokeMode: BUFFERED
+
+Outputs:
+  FunctionUrl:
+    Description: Public HTTPS endpoint for the function
+    Value: !GetAtt MargdarshakFunctionUrl.FunctionUrl
