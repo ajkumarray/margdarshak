@@ -35,6 +35,12 @@ public class LambdaHandler implements RequestStreamHandler {
             // base64-encoded bytes instead.
             SpringBootLambdaContainerHandler.getContainerConfig().addBinaryContentTypes("application/javascript",
                     "text/javascript", "text/css", "font/woff", "font/woff2", "image/svg+xml");
+            // The default ApacheCombinedServletLogFormatter reads the API Gateway request context
+            // unconditionally; on a servlet ERROR dispatch to /error (any 403/404/500) that
+            // attribute is absent, so it NPEs and the real response is replaced with a 502.
+            HANDLER.setLogFormatter((request, response, securityContext) ->
+                    request.getMethod() + " " + request.getRequestURI() + " " + response.getStatus()
+                            + System.lineSeparator());
         } catch (ContainerInitializationException e) {
             throw new RuntimeException("Could not initialize Spring Boot application on Lambda", e);
         }
