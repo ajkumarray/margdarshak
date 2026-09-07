@@ -20,4 +20,6 @@ public interface UrlRepository extends JpaRepository<UrlMasterEntity, Long> {
     Optional<UrlMasterEntity> findByCodeAndStatusAndExpiresAtAfterAndDeleted(String code, UrlStatusEnums status,
             LocalDateTime expiresAt, boolean deleted);
 
+    boolean existsByCode(String code);
+
 }

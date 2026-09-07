@@ -41,10 +41,15 @@ public class UrlImplementation implements UrlService {
     @Autowired
     private UrlHelper urlHelper;
 
+    private static final int CODE_LENGTH = 8;
+
+    private static final int MAX_CODE_ATTEMPTS = 5;
+
     @Override
     public UrlMasterResponse createShortUrl(UrlMasterRequest request, String userCode) {
         try {
-            UrlMasterEntity urlEntity = urlRepository.save(urlHelper.prepareUrlEntity(request, userCode));
+            UrlMasterEntity urlEntity = urlRepository
+                    .save(urlHelper.prepareUrlEntity(request, userCode, generateUniqueCode()));
             return urlHelper.prepareUrlResponse(urlEntity);
         } catch (Exception e) {
             commonFunctionHelper.commonLoggerHelper(e, "UrlImplementation -> createShortUrl failed");
@@ -108,6 +113,16 @@ public class UrlImplementation implements UrlService {
             throw new ApplicationException(MessageTranslator.toLocale(ApplicationEnums.FAILED_MESSAGE.getCode()),
                     ApplicationEnums.FAILED_MESSAGE.getCode());
         }
+    }
+
+    private String generateUniqueCode() {
+        for (int attempt = 0; attempt < MAX_CODE_ATTEMPTS; attempt++) {
+            String code = commonFunctionHelper.generateAlphaNumericCode(CODE_LENGTH);
+            if (!urlRepository.existsByCode(code)) {
+                return code;
+            }
+        }
+        throw new ApplicationException("Unable to generate a unique short code after " + MAX_CODE_ATTEMPTS + " attempts");
     }
 
     @Override

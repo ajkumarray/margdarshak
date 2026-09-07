@@ -4,7 +4,6 @@ import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.time.LocalDateTime;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -20,17 +19,12 @@ import com.ajkumarray.margdarshak.models.response.UrlMasterResponse;
 @Component
 public final class UrlHelper {
 
-    @Autowired
-    private CommonFunctionHelper commonFunctionHelper;
-
     @Value("${url.shortener.base-url}")
     private String baseUrl;
 
-    private final int codeLength = 8;
-
-    public UrlMasterEntity prepareUrlEntity(UrlMasterRequest request, String userCode) {
+    public UrlMasterEntity prepareUrlEntity(UrlMasterRequest request, String userCode, String code) {
         UrlMasterEntity urlEntity = new UrlMasterEntity();
-        urlEntity.setCode(commonFunctionHelper.generateAlphaNumericCode(codeLength));
+        urlEntity.setCode(code);
         urlEntity.setUrl(encodeUrl(request.getUrl()));
         urlEntity.setShortUrl(baseUrl + urlEntity.getCode());
         urlEntity.setExpiresAt(LocalDateTime.now().plusDays(request.getExpirationDays()));
