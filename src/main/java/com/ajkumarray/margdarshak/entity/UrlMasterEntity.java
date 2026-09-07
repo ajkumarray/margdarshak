@@ -10,6 +10,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -21,7 +22,7 @@ import com.ajkumarray.margdarshak.enums.UrlStatusEnums;
  * both the original and shortened URLs.
  */
 @Entity
-@Table(name = "url_master")
+@Table(name = "url_master", uniqueConstraints = @UniqueConstraint(name = "uk_url_master_code", columnNames = "code"))
 @Getter
 @Setter
 @ToString
