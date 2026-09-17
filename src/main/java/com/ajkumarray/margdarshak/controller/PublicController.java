@@ -25,6 +25,7 @@ import com.ajkumarray.margdarshak.exception.ApplicationException;
 
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.http.HttpHeaders;
+import jakarta.validation.Valid;
 
 import lombok.AllArgsConstructor;
 
@@ -59,7 +60,7 @@ public class PublicController {
                         @ApiResponse(responseCode = "400", description = "Invalid request parameters or missing userCode in header") })
         @PostMapping("url")
         public ResponseEntity<ObjectResponse> createShortUrl(
-                        @Parameter(description = "URL shortening request") @RequestBody UrlMasterRequest request,
+                        @Parameter(description = "URL shortening request") @RequestBody @Valid UrlMasterRequest request,
                         @Parameter(description = "HTTP headers containing the mandatory userCode", required = true) @RequestHeader HttpHeaders headers)
                         throws ApplicationException {
                 String userCode = headers.getFirst("userCode");
@@ -74,7 +75,7 @@ public class PublicController {
                 response.setMessageCode(ApplicationEnums.URL_CREATION_SUCCESS.getCode());
                 response.setMessage(MessageTranslator.toLocale(ApplicationEnums.URL_CREATION_SUCCESS.getCode()));
 
-                Object result = urlService.createShortUrl(request, userCode);
+                Object result = urlService.createShortUrl(request, userCode, false);
                 response.setList(result);
 
                 return new ResponseEntity<>(response, headerStatus);

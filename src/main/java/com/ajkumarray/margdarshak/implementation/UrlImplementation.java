@@ -46,16 +46,34 @@ public class UrlImplementation implements UrlService {
     private static final int MAX_CODE_ATTEMPTS = 5;
 
     @Override
-    public UrlMasterResponse createShortUrl(UrlMasterRequest request, String userCode) {
+    public UrlMasterResponse createShortUrl(UrlMasterRequest request, String userCode, boolean allowCustomCode) {
+        String resolvedCode = resolveCode(allowCustomCode ? request.getCode() : null);
         try {
             UrlMasterEntity urlEntity = urlRepository
-                    .save(urlHelper.prepareUrlEntity(request, userCode, generateUniqueCode()));
+                    .save(urlHelper.prepareUrlEntity(request, userCode, resolvedCode));
             return urlHelper.prepareUrlResponse(urlEntity);
+        } catch (ApplicationException ae) {
+            throw ae;
         } catch (Exception e) {
             commonFunctionHelper.commonLoggerHelper(e, "UrlImplementation -> createShortUrl failed");
             throw new ApplicationException(MessageTranslator.toLocale(ApplicationEnums.URL_CREATION_FAILED.getCode()),
                     ApplicationEnums.URL_CREATION_FAILED.getCode());
         }
+    }
+
+    private String resolveCode(String customCode) {
+        if (commonFunctionHelper.isEmptyOrBlank(customCode)) {
+            return generateUniqueCode();
+        }
+        if (commonFunctionHelper.isReservedCode(customCode)) {
+            throw new ApplicationException(MessageTranslator.toLocale(ApplicationEnums.CUSTOM_CODE_RESERVED.getCode()),
+                    ApplicationEnums.CUSTOM_CODE_RESERVED.getCode());
+        }
+        if (urlRepository.existsByCode(customCode)) {
+            throw new ApplicationException(MessageTranslator.toLocale(ApplicationEnums.CUSTOM_CODE_TAKEN.getCode()),
+                    ApplicationEnums.CUSTOM_CODE_TAKEN.getCode());
+        }
+        return customCode;
     }
 
     @Override

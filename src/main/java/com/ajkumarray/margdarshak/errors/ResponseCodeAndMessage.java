@@ -20,4 +20,6 @@ public class ResponseCodeAndMessage {
     public static final String INVALID_TOKEN = "206";
     public static final String INVALID_HEADER_REQUEST = "207";
     public static final String INVALID_USER_CODE = "208";
+    public static final String CUSTOM_CODE_RESERVED = "209";
+    public static final String CUSTOM_CODE_TAKEN = "210";
 }
