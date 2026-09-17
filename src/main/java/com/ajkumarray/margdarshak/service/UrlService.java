@@ -11,7 +11,7 @@ import com.ajkumarray.margdarshak.models.response.UrlMasterResponse;
 @Service
 public interface UrlService {
 
-    UrlMasterResponse createShortUrl(UrlMasterRequest request, String userCode);
+    UrlMasterResponse createShortUrl(UrlMasterRequest request, String userCode, boolean allowCustomCode);
 
     PagedResponse<UrlMasterResponse> getAllUrls(String userCode, int page, int size);
 

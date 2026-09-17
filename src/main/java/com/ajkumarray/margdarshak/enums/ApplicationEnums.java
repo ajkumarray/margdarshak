@@ -19,7 +19,10 @@ public enum ApplicationEnums {
     INVALID_TOKEN(ResponseCodeAndMessage.INVALID_TOKEN),
     INVALID_HEADER_REQUEST(ResponseCodeAndMessage.INVALID_HEADER_REQUEST),
 
-    INVALID_USER_CODE(ResponseCodeAndMessage.INVALID_USER_CODE);
+    INVALID_USER_CODE(ResponseCodeAndMessage.INVALID_USER_CODE),
+
+    CUSTOM_CODE_RESERVED(ResponseCodeAndMessage.CUSTOM_CODE_RESERVED),
+    CUSTOM_CODE_TAKEN(ResponseCodeAndMessage.CUSTOM_CODE_TAKEN);
 
     private String message;
 

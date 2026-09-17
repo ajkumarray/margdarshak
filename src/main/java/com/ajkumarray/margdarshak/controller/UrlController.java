@@ -6,6 +6,7 @@ import com.ajkumarray.margdarshak.util.MessageTranslator;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -58,7 +59,7 @@ public class UrlController {
                         @ApiResponse(responseCode = "401", description = "Unauthorized - Authentication required") })
         @PostMapping("")
         public ResponseEntity<ObjectResponse> createShortUrl(
-                        @Parameter(description = "URL shortening request") @RequestBody UrlMasterRequest request) {
+                        @Parameter(description = "URL shortening request") @RequestBody @Valid UrlMasterRequest request) {
 
                 String userCode = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
                 HttpStatus headerStatus = HttpStatus.OK;
@@ -66,7 +67,7 @@ public class UrlController {
                 response.setMessageCode(ApplicationEnums.URL_CREATION_SUCCESS.getCode());
                 response.setMessage(MessageTranslator.toLocale(ApplicationEnums.URL_CREATION_SUCCESS.getCode()));
 
-                Object result = urlService.createShortUrl(request, userCode);
+                Object result = urlService.createShortUrl(request, userCode, true);
                 response.setList(result);
 
                 return new ResponseEntity<>(response, headerStatus);
@@ -136,7 +137,7 @@ public class UrlController {
         @PutMapping("/update/{code}")
         public ResponseEntity<ObjectResponse> updateUrl(
                         @Parameter(description = "Short URL code") @PathVariable String code,
-                        @Parameter(description = "Updated URL information") @RequestBody UrlMasterRequest request) {
+                        @Parameter(description = "Updated URL information") @RequestBody @Valid UrlMasterRequest request) {
                 ObjectResponse response = new ObjectResponse();
                 HttpStatus headerStatus = HttpStatus.OK;
                 response.setMessageCode(ApplicationEnums.SUCCESS_MESSAGE.getCode());

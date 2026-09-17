@@ -1,6 +1,7 @@
 package com.ajkumarray.margdarshak.util;
 
 import java.security.SecureRandom;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,6 +18,10 @@ public class CommonFunctionHelper {
     private static final int PATTERN_SIZE = 63;
     private static final String PATTERN = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     private SecureRandom random = new SecureRandom();
+
+    // Top-level single-segment routes that would collide with RedirectController's
+    // catch-all GET /{code} if chosen as a custom short code.
+    private static final Set<String> RESERVED_CODES = Set.of("api", "swagger-ui", "v3", "actuator", "favicon.ico");
 
     /**
      * Generates a random alpha numeric code of the given size.
@@ -54,5 +59,9 @@ public class CommonFunctionHelper {
             return jsonNode.isNull();
         }
         return false;
+    }
+
+    public boolean isReservedCode(String code) {
+        return RESERVED_CODES.contains(code.toLowerCase());
     }
 }

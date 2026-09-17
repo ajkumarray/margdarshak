@@ -40,6 +40,10 @@ url:
   shortener:
     base-url: ${URL_SHORTENER_BASE_URL:https://url.ajkumarray.com/}
 
+app:
+  # Where a bare link.ajkumarray.com hit with no code sends the visitor.
+  default-redirect-url: ${APP_DEFAULT_REDIRECT_URL:https://url.ajkumarray.com/}
+
 springdoc:
   api-docs:
     path: /v3/api-docs
