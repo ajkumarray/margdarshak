@@ -10,6 +10,7 @@ import com.ajkumarray.margdarshak.entity.UserMasterEntity;
 import com.ajkumarray.margdarshak.models.request.UserMasterRequest;
 import com.ajkumarray.margdarshak.models.response.UserMasterResponse;
 import com.ajkumarray.margdarshak.models.response.AuthResponse;
+import com.ajkumarray.margdarshak.enums.UserRoleEnums;
 import com.ajkumarray.margdarshak.enums.UserStatusEnums;
 import com.ajkumarray.margdarshak.enums.UserVerificationStatusEnums;
 import com.ajkumarray.margdarshak.security.JwtTokenProvider;
@@ -35,6 +36,8 @@ public class UserHelper {
         userEntity.setProfilePic(request.getProfilePic());
         userEntity.setStatus(UserStatusEnums.ACTIVE);
         userEntity.setVerificationStatus(UserVerificationStatusEnums.PENDING);
+        // Registration always creates a USER; admins are promoted manually in the DB.
+        userEntity.setRole(UserRoleEnums.USER);
         userEntity.setDeleted(false);
         userEntity.setCreatedAt(LocalDateTime.now());
         userEntity.setUpdatedAt(LocalDateTime.now());
@@ -49,12 +52,13 @@ public class UserHelper {
         userResponse.setProfilePic(userEntity.getProfilePic());
         userResponse.setStatus(userEntity.getStatus());
         userResponse.setVerificationStatus(userEntity.getVerificationStatus());
+        userResponse.setRole(userEntity.getRole());
         return userResponse;
     }
 
     public AuthResponse prepareAuthResponse(UserMasterEntity userEntity) {
         AuthResponse authResponse = new AuthResponse();
-        String token = jwtTokenProvider.generateToken(userEntity.getUserCode());
+        String token = jwtTokenProvider.generateToken(userEntity.getUserCode(), userEntity.getRole());
         authResponse.setUserDetails(prepareUserResponse(userEntity));
         authResponse.setToken(token);
         return authResponse;

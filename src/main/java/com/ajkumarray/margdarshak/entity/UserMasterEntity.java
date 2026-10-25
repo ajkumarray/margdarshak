@@ -1,5 +1,6 @@
 package com.ajkumarray.margdarshak.entity;
 
+import com.ajkumarray.margdarshak.enums.UserRoleEnums;
 import com.ajkumarray.margdarshak.enums.UserStatusEnums;
 import com.ajkumarray.margdarshak.enums.UserVerificationStatusEnums;
 
@@ -47,5 +48,9 @@ public class UserMasterEntity extends CommonEntity {
     @Column(name = "verification_status", nullable = false)
     @Enumerated(EnumType.STRING)
     private UserVerificationStatusEnums verificationStatus;
+
+    @Column(name = "role", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private UserRoleEnums role = UserRoleEnums.USER;
 
 }

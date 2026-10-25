@@ -1,5 +1,6 @@
 package com.ajkumarray.margdarshak.models.response;
 
+import com.ajkumarray.margdarshak.enums.UserRoleEnums;
 import com.ajkumarray.margdarshak.enums.UserStatusEnums;
 import com.ajkumarray.margdarshak.enums.UserVerificationStatusEnums;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -31,5 +32,9 @@ public class UserMasterResponse {
     @JsonProperty("verificationStatus")
     @Schema(description = "The email verification status of the user")
     private UserVerificationStatusEnums verificationStatus;
+
+    @JsonProperty("role")
+    @Schema(description = "The role of the user (USER or ADMIN)")
+    private UserRoleEnums role;
 
 }
