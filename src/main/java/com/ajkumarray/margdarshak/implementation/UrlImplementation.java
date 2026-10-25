@@ -140,7 +140,8 @@ public class UrlImplementation implements UrlService {
                 return code;
             }
         }
-        throw new ApplicationException("Unable to generate a unique short code after " + MAX_CODE_ATTEMPTS + " attempts");
+        throw new ApplicationException(
+                "Unable to generate a unique short code after " + MAX_CODE_ATTEMPTS + " attempts");
     }
 
     @Override
@@ -149,6 +150,12 @@ public class UrlImplementation implements UrlService {
                 UrlStatusEnums.ACTIVE, LocalDateTime.now(), false);
         if (urlEntity.isPresent()) {
             UrlMasterEntity url = urlEntity.get();
+            try {
+                urlRepository.incrementClickCount(url.getId(), LocalDateTime.now());
+            } catch (Exception e) {
+                // Click tracking must never block the redirect itself.
+                commonFunctionHelper.commonLoggerHelper(e, "UrlImplementation -> incrementClickCount failed");
+            }
             return urlHelper.decodeUrl(url.getUrl());
         }
         return null;

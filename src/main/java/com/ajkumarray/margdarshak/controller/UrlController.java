@@ -5,7 +5,6 @@ import com.ajkumarray.margdarshak.util.MessageTranslator;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -13,10 +12,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ajkumarray.margdarshak.models.request.UrlMasterRequest;
+import com.ajkumarray.margdarshak.security.AuthContextInterceptor;
 import com.ajkumarray.margdarshak.service.UrlService;
 
 import lombok.AllArgsConstructor;
@@ -59,9 +60,9 @@ public class UrlController {
                         @ApiResponse(responseCode = "401", description = "Unauthorized - Authentication required") })
         @PostMapping("")
         public ResponseEntity<ObjectResponse> createShortUrl(
-                        @Parameter(description = "URL shortening request") @RequestBody @Valid UrlMasterRequest request) {
+                        @Parameter(description = "URL shortening request") @RequestBody @Valid UrlMasterRequest request,
+                        @Parameter(hidden = true) @RequestAttribute(AuthContextInterceptor.USER_CODE) String userCode) {
 
-                String userCode = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
                 HttpStatus headerStatus = HttpStatus.OK;
                 ObjectResponse response = new ObjectResponse();
                 response.setMessageCode(ApplicationEnums.URL_CREATION_SUCCESS.getCode());
@@ -85,8 +86,8 @@ public class UrlController {
         @GetMapping("")
         public ResponseEntity<ObjectResponse> getOriginalUrl(
                         @Parameter(description = "Page number (0-indexed)") @RequestParam(defaultValue = "0") int page,
-                        @Parameter(description = "Number of records per page") @RequestParam(defaultValue = "15") int size) {
-                String userCode = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+                        @Parameter(description = "Number of records per page") @RequestParam(defaultValue = "15") int size,
+                        @Parameter(hidden = true) @RequestAttribute(AuthContextInterceptor.USER_CODE) String userCode) {
                 ObjectResponse response = new ObjectResponse();
                 HttpStatus headerStatus = HttpStatus.OK;
                 response.setMessageCode(ApplicationEnums.SUCCESS_MESSAGE.getCode());

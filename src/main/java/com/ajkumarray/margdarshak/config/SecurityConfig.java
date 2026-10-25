@@ -26,7 +26,7 @@ public class SecurityConfig {
         return http.cors(cors -> cors.configurationSource(corsConfigurationSource())).csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .requestCache(cache -> cache.disable())
-                .authorizeHttpRequests(auth -> auth.requestMatchers("/*", "/api/v1/auth/**", "api/v1/public/**",
+                .authorizeHttpRequests(auth -> auth.requestMatchers("/*", "/api/v1/auth/**", "/api/v1/public/**",
                         "/swagger-ui/**", "/v3/api-docs/**").permitAll().anyRequest().authenticated())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class).build();
     }

@@ -7,13 +7,21 @@ import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
 
+import com.ajkumarray.margdarshak.security.AuthContextInterceptor;
+
+import lombok.AllArgsConstructor;
+
 @Component
 @Configuration
 @EnableWebMvc
+@AllArgsConstructor
 public class WebMvcConfig implements WebMvcConfigurer {
+
+    private final AuthContextInterceptor authContextInterceptor;
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(new LocaleChangeInterceptor());
+        registry.addInterceptor(authContextInterceptor);
     }
 }

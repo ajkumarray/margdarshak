@@ -40,11 +40,10 @@ public class AuthController {
      * @param request The user registration request containing user details
      * @return ResponseEntity containing the registration result
      */
-    @Operation(summary = "Register User", description = "Creates a new user account in the system")
+    @Operation(summary = "Register User", description = "Creates a new user account with role USER and returns a JWT. A role in the request body is ignored.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "User successfully registered", content = @Content(schema = @Schema(implementation = ObjectResponse.class))),
-            @ApiResponse(responseCode = "400", description = "Invalid request parameters"),
-            @ApiResponse(responseCode = "409", description = "User already exists") })
+            @ApiResponse(responseCode = "400", description = "Invalid request parameters or user already exists") })
     @PostMapping(value = "/register")
     public ResponseEntity<ObjectResponse> register(
             @Parameter(description = "User registration details") @RequestBody UserMasterRequest request) {
@@ -65,11 +64,10 @@ public class AuthController {
      * @param request The login request containing user credentials
      * @return ResponseEntity containing the authentication result and JWT token
      */
-    @Operation(summary = "User Login", description = "Authenticates user credentials and returns JWT token")
+    @Operation(summary = "User Login", description = "Authenticates user credentials and returns a JWT carrying the user's role")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Login successful", content = @Content(schema = @Schema(implementation = ObjectResponse.class))),
-            @ApiResponse(responseCode = "401", description = "Invalid credentials"),
-            @ApiResponse(responseCode = "400", description = "Invalid request parameters") })
+            @ApiResponse(responseCode = "401", description = "Invalid credentials") })
     @PostMapping(value = "/login")
     public ResponseEntity<ObjectResponse> login(
             @Parameter(description = "User login credentials") @RequestBody UserLoginRequest request) {
