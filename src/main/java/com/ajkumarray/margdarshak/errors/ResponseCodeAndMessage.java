@@ -22,4 +22,5 @@ public class ResponseCodeAndMessage {
     public static final String INVALID_USER_CODE = "208";
     public static final String CUSTOM_CODE_RESERVED = "209";
     public static final String CUSTOM_CODE_TAKEN = "210";
+    public static final String ACCESS_DENIED = "211";
 }
