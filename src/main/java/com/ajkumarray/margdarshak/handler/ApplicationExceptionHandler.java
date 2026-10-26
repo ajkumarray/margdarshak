@@ -41,6 +41,9 @@ public class ApplicationExceptionHandler {
         if (ApplicationEnums.CUSTOM_CODE_TAKEN.getCode().equals(ex.getErrorCode())) {
             statusCode = HttpStatus.CONFLICT;
         }
+        if (ApplicationEnums.ACCESS_DENIED.getCode().equals(ex.getErrorCode())) {
+            statusCode = HttpStatus.FORBIDDEN;
+        }
         return new ResponseEntity<>(response, statusCode);
     }
 

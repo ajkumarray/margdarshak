@@ -22,7 +22,8 @@ public enum ApplicationEnums {
     INVALID_USER_CODE(ResponseCodeAndMessage.INVALID_USER_CODE),
 
     CUSTOM_CODE_RESERVED(ResponseCodeAndMessage.CUSTOM_CODE_RESERVED),
-    CUSTOM_CODE_TAKEN(ResponseCodeAndMessage.CUSTOM_CODE_TAKEN);
+    CUSTOM_CODE_TAKEN(ResponseCodeAndMessage.CUSTOM_CODE_TAKEN),
+    ACCESS_DENIED(ResponseCodeAndMessage.ACCESS_DENIED);
 
     private String message;
 
