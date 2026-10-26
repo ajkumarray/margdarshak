@@ -44,6 +44,9 @@ public class ApplicationExceptionHandler {
         if (ApplicationEnums.ACCESS_DENIED.getCode().equals(ex.getErrorCode())) {
             statusCode = HttpStatus.FORBIDDEN;
         }
+        if (ApplicationEnums.INVALID_REFRESH_TOKEN.getCode().equals(ex.getErrorCode())) {
+            statusCode = HttpStatus.UNAUTHORIZED;
+        }
         return new ResponseEntity<>(response, statusCode);
     }
 

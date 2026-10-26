@@ -14,6 +14,10 @@ public interface UserService {
 
     AuthResponse login(UserLoginRequest request);
 
+    AuthResponse refresh(String userCode, String jti);
+
+    void logout(String userCode, String jti, boolean all);
+
     UserMasterResponse getUserDetails(String userCode);
 
     UserMasterResponse updateUserDetails(String userCode, UserMasterRequest request);

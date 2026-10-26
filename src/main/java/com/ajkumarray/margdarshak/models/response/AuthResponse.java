@@ -14,6 +14,10 @@ public class AuthResponse {
     @Schema(description = "The token of the user")
     private String token;
 
+    @JsonProperty("refreshToken")
+    @Schema(description = "The refresh token, sent only to /auth/refresh and /auth/logout")
+    private String refreshToken;
+
     @JsonProperty("userDetails")
     @Schema(description = "The user details of the user")
     private UserMasterResponse userDetails;

@@ -16,4 +16,6 @@ public interface UserRepository extends JpaRepository<UserMasterEntity, Long> {
 
     Optional<UserMasterEntity> findByEmail(String email);
 
+    Optional<UserMasterEntity> findByEmailAndStatusAndDeleted(String email, UserStatusEnums status, boolean deleted);
+
 }

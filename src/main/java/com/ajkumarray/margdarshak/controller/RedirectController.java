@@ -31,9 +31,11 @@ public class RedirectController {
 
     private final String defaultRedirectUrl;
 
-    // Explicit constructor (rather than @AllArgsConstructor) so @Value on the
-    // second param is preserved - Lombok-generated constructors don't carry
-    // field-level annotations over to the parameter automatically.
+    /**
+     * Explicit constructor (rather than @AllArgsConstructor) so @Value on the
+     * second param is preserved - Lombok-generated constructors don't carry
+     * field-level annotations over to the parameter automatically.
+     */
     public RedirectController(UrlService urlService,
             @Value("${app.default-redirect-url}") String defaultRedirectUrl) {
         this.urlService = urlService;

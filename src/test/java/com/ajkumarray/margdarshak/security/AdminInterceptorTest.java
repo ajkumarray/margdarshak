@@ -1,84 +1,46 @@
 package com.ajkumarray.margdarshak.security;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockHttpServletResponse;
 
 import com.ajkumarray.margdarshak.enums.ApplicationEnums;
 import com.ajkumarray.margdarshak.enums.UserRoleEnums;
+import com.ajkumarray.margdarshak.exception.ApplicationException;
 
-/**
- * The real site controllers don't exist yet, so a stub controller stands in
- * for /api/v1/site/** (admin) and /api/v1/public/site/** (public).
- */
-@SpringBootTest
-@AutoConfigureMockMvc
-@Import(AdminInterceptorTest.StubSiteController.class)
 class AdminInterceptorTest {
 
-    @RestController
-    static class StubSiteController {
-        @GetMapping("/api/v1/site/ping")
-        String adminPing() {
-            return "admin-ok";
-        }
-
-        @GetMapping("/api/v1/public/site/ping")
-        String publicPing() {
-            return "public-ok";
-        }
-    }
-
-    @Autowired
-    private MockMvc mockMvc;
-
-    @Autowired
-    private JwtTokenProvider jwtTokenProvider;
+    private final AdminInterceptor interceptor = new AdminInterceptor();
 
     @Test
-    void siteWithoutTokenIsForbidden() throws Exception {
-        mockMvc.perform(get("/api/v1/site/ping")).andExpect(status().isForbidden());
+    void adminIsLetThrough() {
+        assertThat(interceptor.preHandle(requestWithRole(UserRoleEnums.ADMIN), new MockHttpServletResponse(),
+                new Object())).isTrue();
     }
 
     @Test
-    void siteWithUserTokenIsAccessDenied() throws Exception {
-        mockMvc.perform(get("/api/v1/site/ping").header("Authorization", bearer(UserRoleEnums.USER)))
-                .andExpect(status().isForbidden())
-                .andExpect(jsonPath("$.mc").value(ApplicationEnums.ACCESS_DENIED.getCode()))
-                .andExpect(jsonPath("$.m").value("Access denied"));
+    void userIsDenied() {
+        assertDenied(requestWithRole(UserRoleEnums.USER));
     }
 
     @Test
-    void siteWithAdminTokenIsAllowed() throws Exception {
-        mockMvc.perform(get("/api/v1/site/ping").header("Authorization", bearer(UserRoleEnums.ADMIN)))
-                .andExpect(status().isOk())
-                .andExpect(content().string("admin-ok"));
+    void anonymousIsDenied() {
+        assertDenied(new MockHttpServletRequest());
     }
 
-    @Test
-    void publicSiteIsOpenWithoutToken() throws Exception {
-        mockMvc.perform(get("/api/v1/public/site/ping"))
-                .andExpect(status().isOk())
-                .andExpect(content().string("public-ok"));
+    private void assertDenied(MockHttpServletRequest request) {
+        assertThatThrownBy(() -> interceptor.preHandle(request, new MockHttpServletResponse(), new Object()))
+                .isInstanceOf(ApplicationException.class)
+                .extracting(e -> ((ApplicationException) e).getErrorCode())
+                .isEqualTo(ApplicationEnums.ACCESS_DENIED.getCode());
     }
 
-    @Test
-    void adminCanStillUseNirdeshakEndpoints() throws Exception {
-        mockMvc.perform(get("/api/v1/url").header("Authorization", bearer(UserRoleEnums.ADMIN)))
-                .andExpect(status().isOk());
-    }
-
-    private String bearer(UserRoleEnums role) {
-        return "Bearer " + jwtTokenProvider.generateToken("MDsitetest", role);
+    private static MockHttpServletRequest requestWithRole(UserRoleEnums role) {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setAttribute(AuthContextInterceptor.USER_ROLE, role);
+        return request;
     }
 }

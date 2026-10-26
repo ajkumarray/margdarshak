@@ -1,5 +1,5 @@
 # Active only under the "lambda" Spring profile (LambdaHandler passes it).
-# DB creds, jwt.secret and url.shortener.base-url are pulled from SSM Parameter Store at
+# DB creds, jwt.secret, jwt.refresh-secret and url.shortener.base-url are pulled from SSM Parameter Store at
 # startup (baked into the SnapStart snapshot). SSM params live under /config/margdarshak/,
 # e.g. /config/margdarshak/spring.datasource.password -> property spring.datasource.password.
 spring:
@@ -20,6 +20,10 @@ spring:
       maximum-pool-size: 1
       minimum-idle: 0
       connection-timeout: 8000
+  # Schema changes are applied by hand (mvn liquibase:update) before a deploy; running them at
+  # startup would make SnapStart's snapshot-time init depend on the DB.
+  liquibase:
+    enabled: false
   jpa:
     open-in-view: false
     show-sql: false
@@ -33,8 +37,11 @@ spring:
         temp:
           use_jdbc_metadata_defaults: false
 
+# jwt.secret and jwt.refresh-secret come from SSM. Seconds: access 24h, refresh 7 days (rotated
+# on every refresh, so only 7 days of inactivity forces a new login).
 jwt:
-  expiration: 604800
+  expiration: 86400
+  refresh-expiration: 604800
 
 url:
   shortener:

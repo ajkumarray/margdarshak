@@ -1,0 +1,13 @@
+# Single source of truth for the schema. Add new changesets as new files at the end; never edit
+# one that has already run anywhere. Applied automatically on local startup, and by hand on Neon
+# (mvn liquibase:update, see DEPLOY-LAMBDA.md) because Lambda runs with Liquibase disabled.
+databaseChangeLog:
+  - include:
+      file: changes/0000-baseline.sql
+      relativeToChangelogFile: true
+  - include:
+      file: changes/0001-user-role.sql
+      relativeToChangelogFile: true
+  - include:
+      file: changes/0002-refresh-token.sql
+      relativeToChangelogFile: true

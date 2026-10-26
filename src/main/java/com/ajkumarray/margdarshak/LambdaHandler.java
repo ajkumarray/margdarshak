@@ -27,17 +27,23 @@ public class LambdaHandler implements RequestStreamHandler {
 
     static {
         try {
-            // Second arg = active Spring profiles; "lambda" pulls in application-lambda.yml.
+            /*
+             * Second arg = active Spring profiles; "lambda" pulls in application-lambda.yml.
+             */
             HANDLER = SpringBootLambdaContainerHandler.getHttpApiV2ProxyHandler(MargdarshakApplication.class, "lambda");
-            // The library's default binary-content-type list is just octet-stream/jpeg/png/gif,
-            // so JS/CSS/fonts get pushed through a text round-trip and silently corrupted
-            // (e.g. Swagger UI's JS bundle rendering blank). Force them through as raw
-            // base64-encoded bytes instead.
+            /*
+             * The library's default binary-content-type list is just octet-stream/jpeg/png/gif,
+             * so JS/CSS/fonts get pushed through a text round-trip and silently corrupted
+             * (e.g. Swagger UI's JS bundle rendering blank). Force them through as raw
+             * base64-encoded bytes instead.
+             */
             SpringBootLambdaContainerHandler.getContainerConfig().addBinaryContentTypes("application/javascript",
                     "text/javascript", "text/css", "font/woff", "font/woff2", "image/svg+xml");
-            // The default ApacheCombinedServletLogFormatter reads the API Gateway request context
-            // unconditionally; on a servlet ERROR dispatch to /error (any 403/404/500) that
-            // attribute is absent, so it NPEs and the real response is replaced with a 502.
+            /*
+             * The default ApacheCombinedServletLogFormatter reads the API Gateway request context
+             * unconditionally; on a servlet ERROR dispatch to /error (any 403/404/500) that
+             * attribute is absent, so it NPEs and the real response is replaced with a 502.
+             */
             HANDLER.setLogFormatter((request, response, securityContext) ->
                     request.getMethod() + " " + request.getRequestURI() + " " + response.getStatus()
                             + System.lineSeparator());

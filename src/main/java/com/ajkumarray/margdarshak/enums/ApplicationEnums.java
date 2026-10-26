@@ -23,7 +23,10 @@ public enum ApplicationEnums {
 
     CUSTOM_CODE_RESERVED(ResponseCodeAndMessage.CUSTOM_CODE_RESERVED),
     CUSTOM_CODE_TAKEN(ResponseCodeAndMessage.CUSTOM_CODE_TAKEN),
-    ACCESS_DENIED(ResponseCodeAndMessage.ACCESS_DENIED);
+    ACCESS_DENIED(ResponseCodeAndMessage.ACCESS_DENIED),
+    INVALID_REFRESH_TOKEN(ResponseCodeAndMessage.INVALID_REFRESH_TOKEN),
+    TOKEN_REFRESH_SUCCESS(ResponseCodeAndMessage.TOKEN_REFRESH_SUCCESS),
+    LOGOUT_SUCCESS(ResponseCodeAndMessage.LOGOUT_SUCCESS);
 
     private String message;
 
