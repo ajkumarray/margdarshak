@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import com.ajkumarray.margdarshak.entity.RefreshTokenEntity;
 import com.ajkumarray.margdarshak.entity.UserMasterEntity;
 import com.ajkumarray.margdarshak.models.request.UserMasterRequest;
 import com.ajkumarray.margdarshak.models.response.UserMasterResponse;
@@ -36,7 +37,9 @@ public class UserHelper {
         userEntity.setProfilePic(request.getProfilePic());
         userEntity.setStatus(UserStatusEnums.ACTIVE);
         userEntity.setVerificationStatus(UserVerificationStatusEnums.PENDING);
-        // Registration always creates a USER; admins are promoted manually in the DB.
+        /*
+         * Registration always creates a USER; admins are promoted manually in the DB.
+         */
         userEntity.setRole(UserRoleEnums.USER);
         userEntity.setDeleted(false);
         userEntity.setCreatedAt(LocalDateTime.now());
@@ -56,12 +59,25 @@ public class UserHelper {
         return userResponse;
     }
 
-    public AuthResponse prepareAuthResponse(UserMasterEntity userEntity) {
+    public AuthResponse prepareAuthResponse(UserMasterEntity userEntity, String refreshToken) {
         AuthResponse authResponse = new AuthResponse();
         String token = jwtTokenProvider.generateToken(userEntity.getUserCode(), userEntity.getRole());
         authResponse.setUserDetails(prepareUserResponse(userEntity));
         authResponse.setToken(token);
+        authResponse.setRefreshToken(refreshToken);
         return authResponse;
+    }
+
+    public RefreshTokenEntity prepareRefreshTokenEntity(String userCode, String jti, LocalDateTime expiresAt) {
+        RefreshTokenEntity refreshTokenEntity = new RefreshTokenEntity();
+        refreshTokenEntity.setJti(jti);
+        refreshTokenEntity.setUserCode(userCode);
+        refreshTokenEntity.setExpiresAt(expiresAt);
+        refreshTokenEntity.setDeleted(false);
+        refreshTokenEntity.setCreatedAt(LocalDateTime.now());
+        refreshTokenEntity.setUpdatedAt(LocalDateTime.now());
+        refreshTokenEntity.setDeletedAt(null);
+        return refreshTokenEntity;
     }
 
     public UserMasterEntity prepareUserUpdateEntity(UserMasterEntity userEntity, UserMasterRequest request) {

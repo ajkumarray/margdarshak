@@ -26,10 +26,18 @@ public interface UrlRepository extends JpaRepository<UrlMasterEntity, Long> {
 
     boolean existsByCode(String code);
 
-    // Single atomic UPDATE so concurrent redirects don't overwrite each other's increments.
+    /**
+     * Single atomic UPDATE so concurrent redirects don't overwrite each other's increments.
+     */
     @Modifying
     @Transactional
-    @Query("UPDATE UrlMasterEntity u SET u.clickCount = u.clickCount + 1, u.lastAccessedAt = :accessedAt WHERE u.id = :id")
+    @Query(
+        """
+            UPDATE UrlMasterEntity u
+            SET u.clickCount = u.clickCount + 1, u.lastAccessedAt = :accessedAt
+            WHERE u.id = :id
+        """
+    )
     int incrementClickCount(@Param("id") Long id, @Param("accessedAt") LocalDateTime accessedAt);
 
 }

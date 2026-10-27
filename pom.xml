@@ -81,6 +81,10 @@
             <scope>runtime</scope>
         </dependency>
         <dependency>
+            <groupId>org.liquibase</groupId>
+            <artifactId>liquibase-core</artifactId>
+        </dependency>
+        <dependency>
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt</artifactId>
             <version>0.9.1</version>
@@ -126,6 +130,27 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+            <!--
+              Applies db/changelog to a database by hand, e.g. Neon before a deploy (Lambda runs with
+              spring.liquibase.enabled=false). Pass the connection on the command line, never in here:
+              mvn liquibase:update -Dliquibase.url=... -Dliquibase.username=... -Dliquibase.password=...
+            -->
+            <plugin>
+                <groupId>org.liquibase</groupId>
+                <artifactId>liquibase-maven-plugin</artifactId>
+                <version>${liquibase.version}</version>
+                <configuration>
+                    <changeLogFile>db/changelog/db.changelog-master.yaml</changeLogFile>
+                    <searchPath>${project.basedir}/src/main/resources</searchPath>
+                </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.postgresql</groupId>
+                        <artifactId>postgresql</artifactId>
+                        <version>${postgresql.version}</version>
+                    </dependency>
+                </dependencies>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

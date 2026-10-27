@@ -3,6 +3,10 @@ package com.ajkumarray.margdarshak.security;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
+import com.ajkumarray.margdarshak.enums.UserRoleEnums;
+
+import io.jsonwebtoken.Claims;
+
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -30,9 +34,10 @@ public class AuthContextInterceptor implements HandlerInterceptor {
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
         String token = request.getHeader("Authorization");
 
-        if (token != null && token.startsWith("Bearer ") && jwtTokenProvider.validateToken(token)) {
-            request.setAttribute(USER_CODE, jwtTokenProvider.getUserCodeFromToken(token));
-            request.setAttribute(USER_ROLE, jwtTokenProvider.getRoleFromToken(token));
+        Claims claims = token != null && token.startsWith("Bearer ") ? jwtTokenProvider.getAccessClaims(token) : null;
+        if (claims != null) {
+            request.setAttribute(USER_CODE, claims.getSubject());
+            request.setAttribute(USER_ROLE, UserRoleEnums.valueOf(claims.get(JwtTokenProvider.ROLE_CLAIM, String.class)));
         }
 
         return true;

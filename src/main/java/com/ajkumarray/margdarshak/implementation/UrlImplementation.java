@@ -153,7 +153,9 @@ public class UrlImplementation implements UrlService {
             try {
                 urlRepository.incrementClickCount(url.getId(), LocalDateTime.now());
             } catch (Exception e) {
-                // Click tracking must never block the redirect itself.
+                /*
+                 * Click tracking must never block the redirect itself.
+                 */
                 commonFunctionHelper.commonLoggerHelper(e, "UrlImplementation -> incrementClickCount failed");
             }
             return urlHelper.decodeUrl(url.getUrl());

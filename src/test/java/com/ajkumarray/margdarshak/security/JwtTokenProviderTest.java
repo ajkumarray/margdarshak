@@ -10,12 +10,14 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import com.ajkumarray.margdarshak.enums.UserRoleEnums;
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 
 class JwtTokenProviderTest {
 
     static final String SECRET = "unit-test-secret-0123456789abcdef0123456789abcdef";
+    static final String REFRESH_SECRET = "unit-test-refresh-secret-0123456789abcdef01234567";
 
     private JwtTokenProvider jwtTokenProvider;
 
@@ -23,6 +25,8 @@ class JwtTokenProviderTest {
         JwtTokenProvider provider = new JwtTokenProvider();
         ReflectionTestUtils.setField(provider, "secretKey", SECRET);
         ReflectionTestUtils.setField(provider, "expiration", 3600L);
+        ReflectionTestUtils.setField(provider, "refreshSecretKey", REFRESH_SECRET);
+        ReflectionTestUtils.setField(provider, "refreshExpiration", 604800L);
         return provider;
     }
 
@@ -37,7 +41,7 @@ class JwtTokenProviderTest {
 
         assertThat(jwtTokenProvider.validateToken(token)).isTrue();
         assertThat(jwtTokenProvider.getUserCodeFromToken(token)).isEqualTo("MDadmin01");
-        assertThat(jwtTokenProvider.getRoleFromToken(token)).isEqualTo(UserRoleEnums.ADMIN);
+        assertThat(jwtTokenProvider.getAccessClaims(token).get(JwtTokenProvider.ROLE_CLAIM)).isEqualTo("ADMIN");
     }
 
     @Test
@@ -84,6 +88,63 @@ class JwtTokenProviderTest {
     @Test
     void emptyTokenIsInvalid() {
         assertThat(jwtTokenProvider.validateToken("Bearer ")).isFalse();
+    }
+
+    @Test
+    void accessTokenWithoutTypIsInvalid() {
+        String token = Jwts.builder().setSubject("MDuser001").claim(JwtTokenProvider.ROLE_CLAIM, "USER")
+                .setExpiration(inOneHour()).signWith(SignatureAlgorithm.HS256, SECRET.getBytes()).compact();
+
+        assertThat(jwtTokenProvider.validateToken("Bearer " + token)).isFalse();
+    }
+
+    @Test
+    void refreshTokenRoundTrip() {
+        String token = jwtTokenProvider.generateRefreshToken("MDuser001", "jti-1", inOneHour());
+
+        Claims claims = jwtTokenProvider.parseRefreshToken(token);
+
+        assertThat(claims.getSubject()).isEqualTo("MDuser001");
+        assertThat(claims.getId()).isEqualTo("jti-1");
+    }
+
+    @Test
+    void refreshTokenIsNotAcceptedAsAccessToken() {
+        String refresh = jwtTokenProvider.generateRefreshToken("MDuser001", "jti-1", inOneHour());
+
+        assertThat(jwtTokenProvider.validateToken("Bearer " + refresh)).isFalse();
+    }
+
+    @Test
+    void accessTokenIsNotAcceptedAsRefreshToken() {
+        String access = jwtTokenProvider.generateToken("MDuser001", UserRoleEnums.USER);
+
+        assertThat(jwtTokenProvider.parseRefreshToken(access)).isNull();
+    }
+
+    @Test
+    void refreshTypedTokenSignedWithAccessSecretIsRejected() {
+        String token = Jwts.builder().setSubject("MDuser001").claim(JwtTokenProvider.TYPE_CLAIM, "refresh")
+                .setId("jti-1").setExpiration(inOneHour())
+                .signWith(SignatureAlgorithm.HS256, SECRET.getBytes()).compact();
+
+        assertThat(jwtTokenProvider.parseRefreshToken(token)).isNull();
+    }
+
+    @Test
+    void refreshTokenWithoutJtiIsRejected() {
+        String token = Jwts.builder().setSubject("MDuser001").claim(JwtTokenProvider.TYPE_CLAIM, "refresh")
+                .setExpiration(inOneHour()).signWith(SignatureAlgorithm.HS256, REFRESH_SECRET.getBytes()).compact();
+
+        assertThat(jwtTokenProvider.parseRefreshToken(token)).isNull();
+    }
+
+    @Test
+    void expiredRefreshTokenIsRejected() {
+        String token = jwtTokenProvider.generateRefreshToken("MDuser001", "jti-1",
+                new Date(System.currentTimeMillis() - 1000));
+
+        assertThat(jwtTokenProvider.parseRefreshToken(token)).isNull();
     }
 
     private static Date inOneHour() {

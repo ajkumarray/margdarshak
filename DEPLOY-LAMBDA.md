@@ -103,6 +103,10 @@ aws ssm put-parameter --region $REGION --type SecureString \
 aws ssm put-parameter --region $REGION --type SecureString \
   --name /config/margdarshak/jwt.secret --value "$(openssl rand -hex 64)"
 
+# Signs refresh tokens; must differ from jwt.secret so neither token kind validates as the other.
+aws ssm put-parameter --region $REGION --type SecureString \
+  --name /config/margdarshak/jwt.refresh-secret --value "$(openssl rand -hex 64)"
+
 aws ssm put-parameter --region $REGION --type SecureString \
   --name /config/margdarshak/url.shortener.base-url --value 'https://link.ajkumarray.com/'
 ```
@@ -126,6 +130,22 @@ aws lambda update-alias --function-name margdarshak --name live --function-versi
 SSM value did. The next real `sam deploy` drops `CONFIG_REFRESH` again, which is harmless.) The
 very first invocation of the new version pays a full cold init (~15s, no SnapStart restore yet) -
 expect one slow or timed-out request immediately after, then it's fine.
+
+## 1b. Apply schema changes (before every deploy)
+
+The schema lives in Liquibase changesets under `src/main/resources/db/changelog/`. Lambda runs with
+`spring.liquibase.enabled: false` (a migration at SnapStart snapshot time would need the DB), so
+apply pending changesets to Neon by hand **before** deploying code that needs them:
+
+```bash
+mvn liquibase:update -Dliquibase.url='jdbc:postgresql://<neon-host>/margdarshak?sslmode=require' \
+  -Dliquibase.username='<neon-username>' -Dliquibase.password='<neon-password>'
+```
+
+It only runs changesets not yet recorded in Neon's `databasechangelog` table, so it's safe to run
+every time; a no-op deploy shows `Run: 0`. Locally, Liquibase runs on app startup instead. New
+schema changes go in a new numbered file under `changes/` plus an `include` in
+`db.changelog-master.yaml` - never edit a changeset that has already run anywhere.
 
 ## 2. Build the deployment artifact
 

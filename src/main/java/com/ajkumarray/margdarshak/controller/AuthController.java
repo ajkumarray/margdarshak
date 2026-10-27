@@ -4,11 +4,15 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestAttribute;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.http.ResponseEntity;
 import com.ajkumarray.margdarshak.enums.ApplicationEnums;
 import com.ajkumarray.margdarshak.models.request.UserMasterRequest;
 import com.ajkumarray.margdarshak.models.request.UserLoginRequest;
 import com.ajkumarray.margdarshak.models.response.ObjectResponse;
+import com.ajkumarray.margdarshak.security.AuthContextInterceptor;
+import com.ajkumarray.margdarshak.security.RefreshTokenInterceptor;
 import com.ajkumarray.margdarshak.service.UserService;
 import com.ajkumarray.margdarshak.util.MessageTranslator;
 import org.springframework.http.HttpStatus;
@@ -78,6 +82,61 @@ public class AuthController {
 
         Object result = userService.login(request);
         response.setList(result);
+
+        return new ResponseEntity<>(response, headerStatus);
+    }
+
+    /**
+     * Issues a new access token and refresh token for a valid refresh token. The
+     * refresh token used is revoked (rotation).
+     *
+     * @param userCode From the refresh token in "Authorization: Bearer ..."
+     * @param jti      The session id carried by that refresh token
+     * @return ResponseEntity containing the new tokens and user details
+     */
+    @Operation(summary = "Refresh Token", description = "Exchanges a refresh token for a new access token and refresh token")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Tokens refreshed", content = @Content(schema = @Schema(implementation = ObjectResponse.class))),
+            @ApiResponse(responseCode = "401", description = "Invalid, expired or revoked refresh token") })
+    @PostMapping(value = "/refresh")
+    public ResponseEntity<ObjectResponse> refresh(
+            @Parameter(hidden = true) @RequestAttribute(AuthContextInterceptor.USER_CODE) String userCode,
+            @Parameter(hidden = true) @RequestAttribute(RefreshTokenInterceptor.JTI) String jti) {
+        ObjectResponse response = new ObjectResponse();
+        HttpStatus headerStatus = HttpStatus.OK;
+        response.setMessageCode(ApplicationEnums.TOKEN_REFRESH_SUCCESS.getCode());
+        response.setMessage(MessageTranslator.toLocale(ApplicationEnums.TOKEN_REFRESH_SUCCESS.getCode()));
+
+        Object result = userService.refresh(userCode, jti);
+        response.setList(result);
+
+        return new ResponseEntity<>(response, headerStatus);
+    }
+
+    /**
+     * Ends the session the refresh token belongs to, or all of the user's
+     * sessions when all is true.
+     *
+     * @param userCode From the refresh token in "Authorization: Bearer ..."
+     * @param jti      The session id carried by that refresh token
+     * @param all      If true, ends every session of the user
+     * @return ResponseEntity confirming the logout
+     */
+    @Operation(summary = "Logout", description = "Ends the session of the given refresh token, or every session of the user when all=true")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Logged out", content = @Content(schema = @Schema(implementation = ObjectResponse.class))),
+            @ApiResponse(responseCode = "401", description = "Invalid refresh token") })
+    @PostMapping(value = "/logout")
+    public ResponseEntity<ObjectResponse> logout(
+            @Parameter(hidden = true) @RequestAttribute(AuthContextInterceptor.USER_CODE) String userCode,
+            @Parameter(hidden = true) @RequestAttribute(RefreshTokenInterceptor.JTI) String jti,
+            @Parameter(description = "End every session of the user instead of only this one") @RequestParam(defaultValue = "false") boolean all) {
+        ObjectResponse response = new ObjectResponse();
+        HttpStatus headerStatus = HttpStatus.OK;
+        response.setMessageCode(ApplicationEnums.LOGOUT_SUCCESS.getCode());
+        response.setMessage(MessageTranslator.toLocale(ApplicationEnums.LOGOUT_SUCCESS.getCode()));
+
+        userService.logout(userCode, jti, all);
 
         return new ResponseEntity<>(response, headerStatus);
     }

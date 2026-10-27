@@ -23,4 +23,7 @@ public class ResponseCodeAndMessage {
     public static final String CUSTOM_CODE_RESERVED = "209";
     public static final String CUSTOM_CODE_TAKEN = "210";
     public static final String ACCESS_DENIED = "211";
+    public static final String INVALID_REFRESH_TOKEN = "212";
+    public static final String TOKEN_REFRESH_SUCCESS = "213";
+    public static final String LOGOUT_SUCCESS = "214";
 }

@@ -19,8 +19,10 @@ public class CommonFunctionHelper {
     private static final String PATTERN = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     private SecureRandom random = new SecureRandom();
 
-    // Top-level single-segment routes that would collide with RedirectController's
-    // catch-all GET /{code} if chosen as a custom short code.
+    /**
+     * Top-level single-segment routes that would collide with RedirectController's
+     * catch-all GET /{code} if chosen as a custom short code.
+     */
     private static final Set<String> RESERVED_CODES = Set.of("api", "swagger-ui", "v3", "actuator", "favicon.ico");
 
     /**
