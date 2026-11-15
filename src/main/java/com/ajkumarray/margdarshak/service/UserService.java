@@ -18,6 +18,8 @@ public interface UserService {
 
     void logout(String userCode, String jti, boolean all);
 
+    int cleanupRefreshTokens();
+
     UserMasterResponse getUserDetails(String userCode);
 
     UserMasterResponse updateUserDetails(String userCode, UserMasterRequest request);

@@ -41,6 +41,14 @@ Resources:
       FunctionUrlConfig:
         AuthType: NONE
         InvokeMode: BUFFERED
+      Events:
+        # Daily at 00:00 IST (18:30 UTC): LambdaHandler runs the refresh-token cleanup for this
+        # event instead of proxying it as an HTTP request.
+        RefreshTokenCleanup:
+          Type: Schedule
+          Properties:
+            Schedule: cron(30 18 * * ? *)
+            Description: Hard-delete revoked and expired refresh_token rows
 
 Outputs:
   FunctionUrl:

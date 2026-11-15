@@ -147,6 +147,19 @@ every time; a no-op deploy shows `Run: 0`. Locally, Liquibase runs on app startu
 schema changes go in a new numbered file under `changes/` plus an `include` in
 `db.changelog-master.yaml` - never edit a changeset that has already run anywhere.
 
+## 1c. Scheduled jobs
+
+`template.yaml` attaches an EventBridge `Schedule` event to the same function: every day at
+00:00 IST (`cron(30 18 * * ? *)`, UTC) it invokes the `live` alias with a scheduled event.
+`LambdaHandler` recognises it (`"source": "aws.events"`) and runs the refresh-token cleanup
+(hard-deletes revoked and expired `refresh_token` rows) instead of proxying an HTTP request; the
+removed row count is in the function's CloudWatch logs. Run it by hand with:
+
+```bash
+aws lambda invoke --function-name margdarshak:live --region ap-southeast-1 \
+  --cli-binary-format raw-in-base64-out --payload '{"source":"aws.events"}' /dev/stdout
+```
+
 ## 2. Build the deployment artifact
 
 ```bash

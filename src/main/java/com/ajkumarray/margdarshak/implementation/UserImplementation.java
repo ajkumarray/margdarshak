@@ -143,6 +143,11 @@ public class UserImplementation implements UserService {
     }
 
     @Override
+    public int cleanupRefreshTokens() {
+        return refreshTokenRepository.deleteRevokedOrExpired(LocalDateTime.now());
+    }
+
+    @Override
     public UserMasterResponse getUserDetails(String userCode) {
         try {
             Optional<UserMasterEntity> userEntity = userRepository.findByUserCodeAndStatusAndDeleted(userCode,

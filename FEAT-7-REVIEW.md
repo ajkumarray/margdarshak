@@ -1,6 +1,6 @@
 # FEAT-7 review: refresh token branch
 
-Review of `feature/FEAT-7-implement-refresh-token` against `master` (2026-10-27). Nothing has been changed yet; this is a list to act on.
+Review of `feature/FEAT-7-implement-refresh-token` against `master` (2026-10-27). The branch is merged (`12f5ab1`) and deployed as Lambda version 17 (2026-10-27). **This file is also the tracker for next tasks**; see [Next tasks](#next-tasks) at the bottom.
 
 ## Overdone (can be simplified)
 
@@ -19,7 +19,7 @@ Review of `feature/FEAT-7-implement-refresh-token` against `master` (2026-10-27)
 2. **The app can't start locally right now.**
    - The local `application.properties` has no `jwt.refresh-secret`, and `@Value` has no default, so startup fails.
    - Liquibase now runs on local startup against whatever DB that file points to. If it points at Neon, it applies `0002` to prod.
-3. **Nirdeshak frontend.**
+3. ✅ **Fixed** (nirdeshak FEAT-6, live-tested 2026-11-14). **Nirdeshak frontend.**
    - Auth tokens drop from 7 days to 24h, and every existing token stops working on deploy (no `typ` claim).
    - Until the frontend calls `/auth/refresh` on a 401, users have to log in daily.
    - The frontend must keep two tabs from refreshing at once, or one of them gets a 401.
@@ -34,7 +34,7 @@ Review of `feature/FEAT-7-implement-refresh-token` against `master` (2026-10-27)
    - `Authorization: Bearer <refresh token>`
    - `?all=true`
    - `M01212` / `M01213` / `M01214`
-7. **Logout needs a valid, unexpired refresh token.** After 7 days of inactivity the client can't call logout. That's acceptable, since the session is dead anyway, but the frontend should just clear its tokens on a 401.
+7. ✅ **Fixed** (nirdeshak FEAT-6 clears tokens on a refresh 401). **Logout needs a valid, unexpired refresh token.** After 7 days of inactivity the client can't call logout. That's acceptable, since the session is dead anyway, but the frontend should just clear its tokens on a 401.
 
 ## Pre-existing (not from this branch, worth knowing)
 
@@ -43,22 +43,59 @@ Review of `feature/FEAT-7-implement-refresh-token` against `master` (2026-10-27)
 - Interceptor and security paths are hard-coded as `/api/v1/...`, while controllers use `${spring.api}`.
 - `GET /user/{userCode}` lets any logged-in user read any user, including their role.
 
-## Before deploying this branch
+## Deployment (2026-10-27)
 
-1. Add `jwt.refresh-secret` to the local `application.properties`. Ideally also set `spring.jpa.hibernate.ddl-auto=validate`, and make sure it points at the local DB.
-2. Create the SSM parameter:
-   ```bash
-   aws ssm put-parameter --region ap-southeast-1 --type SecureString \
-     --name /config/margdarshak/jwt.refresh-secret --value "$(openssl rand -hex 64)"
-   ```
-3. Run `mvn liquibase:update` against Neon. It should report `Run: 1` (creates `refresh_token`).
-4. Run `mvn -P lambda -DskipTests clean package`, then `sam deploy`.
+1. ⏳ **Yours, local only:** add `jwt.refresh-secret` to the local `application.properties`. Ideally also set `spring.jpa.hibernate.ddl-auto=validate`, and point it at the local DB.
+2. ✅ SSM `/config/margdarshak/jwt.refresh-secret` created (version 1).
+3. ✅ `mvn liquibase:update` on Neon: `Run: 1`, `refresh_token` created.
+4. ✅ `mvn -P lambda -DskipTests clean package` + `sam deploy`. Lambda version 17 is live, and its code hash matches the build.
 5. Smoke test:
-   - login, refresh, logout, logout `?all=true`
-   - `/api/v1/url` with and without a token
-   - anonymous `/api/v1/public/url`
-   - a redirect
+   - ✅ Read-only checks passed:
+     - `GET /` → 302
+     - `/api/v1/url` without a token or with an invalid one → 403
+     - `/auth/refresh` without a token → 401 `M01212`
+     - `/auth/logout?all=true` with a bad token → 401
+     - bad login → 401
+     - `/public/url` → 405
+     - `/site/ping` → 403
+     - unknown code → 404
+   - ✅ **With a real account** (live-tested through nirdeshak FEAT-6, 2026-11-14):
+     - login returns `lc.refreshToken`
+     - refresh returns a new pair, and reusing the old token returns 401
+     - logout, then refresh with the same token returns 401
 
-## Suggested first fixes
+## Next tasks
 
-Underdone #1 (the login status check), then overdone #1 and #2 (plain `@Modifying`, one query instead of two). They're small, and they make the code both simpler and more correct.
+Tick these off here as they're done.
+
+### 1. Refresh-token cleanup (next branch)
+- [x] A daily midnight job (00:00 IST) that hard-deletes `refresh_token` rows where `deleted = true OR expires_at < now()`. Implemented 2026-11-14, not deployed yet.
+- [x] An EventBridge `Schedule` on the existing function (option A, not a second function). `LambdaHandler` routes `"source": "aws.events"` to `UserService.cleanupRefreshTokens()` through `SpringContextHolder`.
+- [x] A `template.yaml` schedule event, plus "1c. Scheduled jobs" in `DEPLOY-LAMBDA.md` (with a manual-invoke command).
+- [ ] Deploy (`package` + `sam deploy`; no migration or SSM changes), then invoke it once by hand and check CloudWatch for the removed-row count.
+
+### 2. Decisions needed before the Site API admin endpoints
+- [ ] Portfolio login gate: a shared-secret `X-Client-Key` header (only the portfolio server may log in as admin)? And should `/site/**` accept only portfolio-issued tokens (`aud` claim)?
+- [ ] Unauthenticated `/site/**`: keep the default 403, or return 401 as the original spec asked?
+- [ ] Swagger `bearerAuth`: add it, which also lets `/auth/refresh` and `/auth/logout` be tried from Swagger UI (Underdone #5).
+
+### 3. Portfolio Site API
+- [ ] Step 4: changeset `0003-site-tables.sql` (`site_content`, and `site_post` with a slug unique among non-deleted posts), plus entities and repositories.
+- [ ] Step 5: site response codes and messages, plus the 404/409 mappings in `ApplicationExceptionHandler`.
+- [ ] Step 6: the content API.
+  - `GET /api/v1/public/site/content`
+  - admin-only `PUT /api/v1/site/content`
+- [ ] Step 7: the posts API.
+  - public list and detail, published posts only
+  - admin CRUD with slug validation
+- [ ] Step 8: `SITE-API.md` with the contract, then deploy.
+
+### 4. Nirdeshak frontend (outside this repo)
+- [x] Call `/auth/refresh` on a 401, retry the request, and let only one tab refresh at a time (Underdone #3). Done in nirdeshak FEAT-6; it refreshes on 401 and on the empty-body 403 Spring returns for an expired access token (not on `M01211`). Live-tested 2026-11-14.
+- [x] Send `/auth/logout` (or `?all=true`) on sign-out, and clear the stored tokens whenever refresh returns 401 (Underdone #7). Done in nirdeshak FEAT-6; `?all=true` isn't used by the UI yet. Live-tested 2026-11-14.
+
+### 5. Smaller items
+- [ ] Docs: update `README.md:161` and document the `/auth/refresh` and `/auth/logout` contract (Underdone #6).
+- [ ] Fix the CORS origin `https://url.ajkumarray.com/` (trailing slash).
+- [ ] Restrict `GET /user/{userCode}` to the caller's own user.
+- [ ] Consider bringing back lightweight coverage for the permitAll fix, the no-token 403 and the controller wiring (Underdone #4).

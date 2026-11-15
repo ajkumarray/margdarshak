@@ -184,6 +184,13 @@ class UserImplementationTest {
         verify(refreshTokenRepository, never()).revokeAllForUser(anyString(), any());
     }
 
+    @Test
+    void cleanupDeletesRevokedAndExpiredSessions() {
+        when(refreshTokenRepository.deleteRevokedOrExpired(any())).thenReturn(5);
+
+        assertThat(userImplementation.cleanupRefreshTokens()).isEqualTo(5);
+    }
+
     private void givenActiveUser() {
         when(userRepository.findByEmailAndStatusAndDeleted(EMAIL, UserStatusEnums.ACTIVE, false))
                 .thenReturn(Optional.of(user));
