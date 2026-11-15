@@ -49,4 +49,17 @@ public interface RefreshTokenRepository extends JpaRepository<RefreshTokenEntity
     )
     int revokeAllForUser(@Param("userCode") String userCode, @Param("now") LocalDateTime now);
 
+    /**
+     * Daily cleanup: physically removes revoked and expired sessions.
+     */
+    @Modifying
+    @Transactional
+    @Query(
+        """
+            DELETE FROM RefreshTokenEntity r
+            WHERE r.deleted = true OR r.expiresAt < :now
+        """
+    )
+    int deleteRevokedOrExpired(@Param("now") LocalDateTime now);
+
 }
